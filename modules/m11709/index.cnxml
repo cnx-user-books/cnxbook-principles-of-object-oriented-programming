@@ -1,0 +1,91 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:md="http://cnx.rice.edu/mdml">
+	<title>Object Relationships</title>
+	<metadata><md:content-id>undefined</md:content-id><md:title/><md:uuid>cfd55e13-3b78-4101-9520-0642e05b39be</md:uuid>
+</metadata>
+	<content>
+		<para id="p10">
+			<!--  -->
+			An object-oriented system can be characterized as a system of cooperating objects.  Some objects interact only with certain other objects or perhaps only with a certain set of objects.    Sometimes objects are treated as equivalent even though there may be specific differences between them, for instance a situation may call for a "fruit" whereupon an "apple" will do just as well as an "orange".  That is, apples and oranges are treated as abstractly equivalent.   Conversely, the system designer may want to express the commonality between apples and oranges.    An OO system has two distinct mechanisms to express these relationship notions:  "is-a" which is technically referred to as "inheritance" and "has-a" which is technically referred to as "composition".
+		</para>
+		<section id="s10">
+			<title>"Is-a" or "Inheritance"</title>
+			<para id="s10p10">
+				<!--  -->
+			"Is-a" or "inheritance" (sometimes also called "generalization") relationships capture a hierarchal relationship between classes of objects.   For instance, a "fruit" is a generalization of "apple", "orange", "mango" and many others.      We say that fruit is an abstraction of apple, orange, etc.   Conversely, we can say that since apples are fruit (i.e. an apple "is-a" fruit), that they <term>inherit</term> all the properties common to all fruit, such as being a fleshy container for the seed of a plant.
+		</para>
+			<figure id="s10f10">
+				<title>UML Class Diagram Showing Inheritance</title>
+				<media id="idm2963872" alt=""><image src="../../media/isa.png" mime-type="image/png"/></media>
+				<caption>The above diagram shows the "is-a" relationship between Apple, Orange and Mango subclasses and the more abstract Fruit superclass.</caption>
+			</figure>
+			<note type="UML Syntax" id="idm904304"><label>UML Syntax</label>Classes are represented by boxes with the class name separated at the top by a horizontal line.
+</note><note type="UML Syntax" id="idm8978800"><label>UML Syntax</label><term>Inheritance ("is-a") lines</term> are represented by solid lines with solid arrowheads.  The arrow points from the subclass to the superclass (think "a subclass object is-a superclass object")
+</note><para id="s10p20">
+				<!--  -->In Java, inheritance relationships are declared using the <code>extends</code> keyword when declaring a class.   A <term>subclass</term> "extends" a <term>superclass</term>, which means that the subclass is a concrete example of the more abstract superclass.   For instance, the class <code>Apple</code> would extend the class <code>Fruit</code>.  
+<code display="block" id="idp395392">
+public class Apple extends Fruit {
+	...
+}</code>In Java, a subclass is allowed to extend only a single superclass (no "multiple inheritance").  This restricts the interpretation of a hierarchal taxomony.  A subclass is an embodiment of its superclass.  It is useful to think of the subclass as not inheriting its superclass's behaviors but rather possessing these behaviors simply because it <emphasis>is </emphasis>the superclass (this is <term>polymorphism</term>).    <code>Extend </code>really models what an object intrinsically is--its true "being" as it were.  This is particularly useful when the superclass has particular concrete behaviors that all the subclasses should exhibit. </para>
+			<para id="s10p30">However, "is-a" can really be more of an "acts-like-a" relationship.   This stems from the perspective that all objects are defined soley by their behaviors.  We can never truly know what an object truly is, only how it <emphasis>acts</emphasis>.   If two objects behave identically (at some abstract level) then we say that they are abstractly equivalent.   What we need is a way to express the pure behavioral aspects of an object.   Java has a the keyword <term>implements</term> which is used to show generalization of a pure behavioral abstraction called an <term>interface</term>.   An interface has a similar syntax to a class, but only specifies behaviors in terms of the "signatures" (the input and output types) of the methods.  For example we could have  <code display="block" id="idm1049024">
+public interface ISteerable {
+	public abstract void turnLeft();
+	public abstract void turnRight();
+}
+
+public class Truck implements ISteerable {
+	public void turnLeft() {
+		// turn the tires to the left
+	}
+	public void turnRight() {
+		// turn the tires to the right
+	}
+}
+
+public class Boat implements ISteerable {
+	public void turnLeft() {
+		// turn the rudder to the left
+	}
+	public void turnRight() {
+		// turn the rudder to the right
+	}
+}
+</code>
+
+<note type="Java keywords public, abstract and void" id="idm1872144"><label>Java keywords public, abstract and void</label>A <code> public </code> class, method or field can be seen and used by anyone.   Contrasts with private (seen and used only by that class) and package (seen and used only by classes in the same package).  We'll talk more about these later.
+
+An <code>abstract</code> class or method is a purely abstract definition in that it specifies the existence of a behavior without specifying exactly what that behavior is.   
+
+A <code>void</code> return type declares a non-existent return value, that is, no return value at all.
+
+
+</note>
+
+
+Above, Trucks and Boats are not taxonomically related, but yet they both embody the behaviors of steerability, such as the ability to turn left or right.  A person can pilot either a boat or a truck based soley on the fact that they both support turning left or right and not based on what sort of entity they are fundamentally. Note that as per the above definition, a class can implement multiple interfaces at the same time. </para>
+			<figure id="s10f20">
+				<title>UML Class Diagram Showing Implementation</title>
+				<media id="idm2439760" alt=""><image src="../../media/actslike.png" mime-type="image/png"/></media>
+				<caption>The above diagram shows the "acts-like-a" relationships between ISteerable, Boat, and Truck classes</caption>
+			</figure>
+<note type="UML Syntax" id="idm9036720"><label>UML Syntax</label><term> Implementation ("acts-like-a") lines </term> are represented by <emphasis>dotted</emphasis> lines with solid arrowheads.  The arrow points from the subclass to the interface (think "a subclass object acts-like-a interface")
+</note>
+		</section>
+		<section id="s20">
+			<title>"Has-a" or "Composition"</title>
+			<para id="s20p10">
+				
+			"Has-a" or "composition" (sometimes referred to as an "associative") relationships capture the notion that one object has a distinct and persistant communication relationship with another object.  for instance, we can say a car "has-a" motor.   The car and the motor are not related in a hierarchal manner, but instead we need to be able to express that this pair of objects has a particular working relationship.     The car gives gas to the motor and the the motor will propel the car along.    Compositional relationships can be one-way, where one object can, in a persistant manner, talk to (i.e. call methods of)  a second object but the second object cannot, in a persistent manner, talk back to the first object.  Compositional relationships can also be two-way, where both objects can talk to each other in a persistent manner. 
+		</para>
+			<figure id="s20f10">
+				<title>UML Class Diagram Showing Composition</title>
+				<media id="idm8744896" alt=""><image src="../../media/hasa.png" mime-type="image/png"/></media>
+				<caption>The above diagram shows the "has-a" relationships between the Car, Motor and Wheel classes</caption>
+			</figure>
+<note type="UML Syntax" id="idm1159248"><label>UML Syntax</label><term> Composition ("has-a") lines </term> are represented by solid lines with <emphasis>open</emphasis> arrowheads.  The arrow points from the owner ("composite") to the ownee  ("composee"). Think "a composite has a composee".  The number at the arrowhead tells how many composees there are, e.g. 1, 2, etc.  "*" means an limited number, so "0...* means zero or more and "1..*" means at least one. 
+</note>
+			<para id="s20p20">
+				The emphasis made above with regards to persistent communication is deliberate and important.   It is indeed possible for an object to communicate with another object in a non-persistent manner.  Such non-persistent communication is generally not thought of as a compositional relationship, but rather as a dependency relationship where the action of one object depends on that of another.   An object can tell a second object that it (the second object) needs to talk to a specific, perhaps third object.   The second object does not know with whom it will be communicating until the first object tells it.   The second object may not "remember" the object it is supposed to communicate with for any length of time after the communication was accomplished and the second object merely waits for the first object to tell it with whom to communicate next.   This non-persistent communication is normally established by simply passing the third target object as an input parameter to the method call made on the second object by the first.  Note that the third object could actually be the first object, creating a non-persistent two-way communication from an initially one-way communication.   
+		</para>
+		</section>
+	</content>
+</document>

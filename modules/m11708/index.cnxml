@@ -1,0 +1,121 @@
+<document xmlns="http://cnx.rice.edu/cnxml">
+	<title>Objects and Classes</title>
+	<metadata xmlns:md="http://cnx.rice.edu/mdml">
+  <md:content-id>m11708</md:content-id>
+  <md:title>Objects and Classes</md:title>
+  <md:abstract>An introduction to the concepts of objects and classes</md:abstract>
+  <md:uuid>899de3f5-1d52-4f27-9fb0-8285026f61e3</md:uuid>
+</metadata>
+	<content>
+		<section id="s10">
+			<title>Objects</title>
+			<para id="s10p10">In the "real" world, objects are the entities of which the world is comprised.   Everything that happens in the world is related to the interactions between the objects in the world.   Just as atoms, which are objects, combine to form molecules and larger objects, the interacting entities in the world can be thought of as interactions between and among both singular ("atomic") as well as compound ("composed") objects.   The real world consists of many, many objects interacting in many ways.   While each object may not be overly complex, their myriad of interactions creates the overall complexity of the natural world.  It is this complexity that we wish to capture in our software systems.</para>
+			<para id="s10p20">In an object-oriented software system,<term>objects</term> are entities used to represent or model a particular piece of the system.   <quote id="id1170419177741" display="block">Objects are the primary units used to create abstract models.</quote>   </para>
+			<para id="s10p30">There are a number of schools of object-oriented programming, which differ slightly on how they view objects.    Here, we will take a "behaviorist"  (our term) stance:<quote id="id1170422696407" display="block"><emphasis> An object is characterized solely by it behaviors.</emphasis></quote>
+Essentially this defines an object by the way it interacts with its world.   An object that does not interact with anything else effectively does not exist.   Access to internally stored data is necessarily through some sort of defined behavior of the object.   It is impossible for an outside entity to truly "know" whether or not a particular piece of data is being stored inside of another object.</para>
+			<note id="id1170415638900" type="Seeing vs. Being"><label>Seeing vs. Being</label>A beautiful example of a model that exhibits a particular behavior but without exactly replicating the mechanics we expect to produce that behavior is the "Dragon" optical illusion.  A printout to create this simple folded paper display can be found at the web site of the <link url="http://www.grand-illusions.com/opticalillusions/dragon_illusion/">Grand Illusions Toy Shop in England</link>. </note><para id="s10p40">This does not mean however, that an object may not contain data (information) in fields.   The essence of the object is in how the object behaves in relationship to or as a result of its data, should it contain any.   <quote id="id1170416728844" display="block"><emphasis>The existence of data in an object is an implementation technique used to generate the required behavior of that object.</emphasis></quote></para>
+		</section>
+		<section id="s20">
+			<title>Classes</title>
+			<para id="s20p10">Many objects differ from each other only in the <emphasis>value </emphasis>of the data that they hold.  For example, both a red crayon and a blue crayon are crayons; they differ only in the value of the color attribute, one has a red color and the other a blue color.   Our object-oriented system needs a way to capture the abstraction of a crayon, independent of the value of its color.   That is, we want to express that a set of objects are abstractly <emphasis>equivalent</emphasis>, differing only in the values of their attributes and perhaps, thus differing in the behaviors that result from those values.</para>
+			<para id="s20p20">Many objects are similar in many overall, generalized ways, differing only in smaller, more specific details.  In biology and other fields, scientists organize objects into taxonomies, which are classification hierarchies used to express these similarities.  For instance, a butterfly and a lobster are quite different, yet they share the common characteristics of all Arthropods, such as a jointed exoskeleton.  The notion of an Arthropod enables us to understand and deal with butterflies and lobsters in an abstract, unified manner.  So once again we are trying to express abstract equivalence.</para>
+			<para id="s20p30">Object-oriented systems use <term>classes </term> to express the above notions of abstract equivalence.  <quote id="id1170404554370" display="block"><emphasis>A class is an abstract description of a set of objects.</emphasis></quote> A class thus contain the descriptions of all the behaviors of the objects that it represents.  In computer science parlance, we call the individual behaviors of a class its <term>methods</term>.  In addition, a class may, but not always, contain descriptions of the internal data held by the objects, called its <term>fields</term>, as well as implementation details about its methods and fields.</para>
+			<para id="s20p40">Turning the description around, we can say that a class is a template or recipe for the creation of a particular type of object.   That is, one can use a class to create ("<emphasis>instantiate</emphasis>") objects of the type described by the class.   Be careful not to make the very beginner's common mistake of equating classes and objects.   A class is a specification of an set of objects, it is not the actual object. </para>
+			<para id="s20p50">In technical terms, a class defines a new <term document="m11785">type</term> in the system.   Types are identifies used to differentiate different kinds of data.    For instance, integers, characters, strings and arrays are all types of data.</para>
+			<section id="s30">
+				<title>Implementation in Java</title>
+				<para id="s30p10">Classes are the fundamtental building blocks of Java programs.  Defining a class is basically a matter of specifying a name for the class, its relationship to other classes and what sort of behaviors the class exhibits as well as what data it may contain.</para>
+				<para id="s30p20">SuppSuppose we wanted to define a class to describe a household pet.   We could do it as such: <code id="id1170439488730" display="block">class Pet {
+	}</code></para>
+				<para id="s30p30">The word <code>class </code>above is called a <term>keyword </term>and can only be used to state that the following code is the definition of a class.  The <code>class </code>keyword is immediately followed by the desired name of the class,  <code>Pet</code>here.   The curly braces, <code>{...}</code>, indicate the extent of the definition of the class.  That is, any definitions of the class's behaviors and data will be found between the curly braces.  Curly braces must therefore always appear as a matched set.</para>
+				<para id="s30p40"><quote id="id1170421301993" display="block">In general, in Java, curly braces mark the extent of a definition.</quote></para>
+				<note id="id1170418042607" type="Java style note"><label>Java style note</label>The accepted typographic standard in the Java community is that the opening curly brace is at the end of a line and the ending curly brace is at the beginning of its own line.  Any code between the curly braces is indented.</note>
+				<para id="element-672">Well, our class for pets is simple, but not very interesting because it doesn't do anything.    We could say that our pet has a name, but personally, I have found that the behavior of most pets is not affected by the particular name we give them.   That is, we can give our pet a name but that doesn't change the way they behave.     Let's try something else.</para><para id="s30p60">Pets eat a certain amount of food per day.   Pets have a certain weight.   Let's create a <emphasis>model</emphasis>, that states that the number of hours that a pet sleeps per day is related to the amount of food they eat and their weight.  Thus we could say that a pet has a behavior of sleeping a certain number of hours depending on its weight and the amount of food eaten.</para>
+				<para id="s30p70"><code id="id1170420092991" display="block">/**
+ * A class that models a household pet
+ */
+class Pet{
+  
+  /**
+   * The weight of the pet in lbs
+   */
+  double weight;  
+  
+  /**
+   * The number of hours the pet will sleep after eating
+   * the given lbs of food.
+   * @param lbsOfFood The number of lbs of food eaten.
+   * @return The number of hours slept after eating the food.
+   */
+  double hoursSlept(double lbsOfFood) {
+    return 24.0*lbsOfFood/weight;
+  }
+}
+</code></para>
+				<para id="s30p80">But what about the pet's owner (a person, supposedly)? A person is not such a simple thing as a weight. Assigning a number to every possible person in the world is possible but not necessarily the most practical technique.   There are many ways to represent people:  the Registrar likes to think of you as a number with credit hours and unpaid bills, The CS department sees you as a 8-character login and unfinished graduation requirements, your doctor sees you as a collection of pulsating blood vessels, cells and bones, and your parents see you as this sweet little thing just out of diapers.   A person is still a person, but the way that we choose to represent them may differ from situation to situation.   </para>
+				<para id="s30p90">But here's the crux of the issue:  does your pet care how you are internally represented?   Or does your pet just want something that is a person to be their owner?
+
+<code id="id4821438" display="block">/**
+ * A class that models a household pet
+ */
+class Pet{
+  
+  /**
+   * The weight of the pet in lbs
+   */
+  double weight;  
+  
+  /**
+   * The pet's owner
+   */
+  Person owner;
+  
+  /**
+   * The number of hours the pet will sleep after eating
+   * the given lbs of food.
+   * @param lbsOfFood The number of lbs of food eaten.
+   * @return The number of hours slept after eating the food.
+   */
+  double hoursSlept(double lbsOfFood) {
+    return 24.0*lbsOfFood/weight;
+  }
+  
+  /**
+   * Determines whether or not this pet is happy to see a 
+   * particular person. 
+   * @param p The person who the pet sees.
+   * @return true if the Person is their owner, false otherwise.
+   */
+  boolean isHappyToSee(Person p) {
+    return p == owner;
+  }
+}
+
+</code></para>
+				<para id="s30p100">Here we've added a field of type <code>Person</code>, which is a class used to represent people. It doesn't matter how <code>Person</code> is implemented, just that it is a representation of a person.    We could use the class definition of <code>Person</code> that was created in the <link document="m11785">module on Abstraction</link>, or perhaps one that is fixed up a little bit, or perhaps a completely new one.   The <code>Pet</code> doesn't care.</para>
+			</section><para id="element-53">Thus we see that objects can contain objects.  What does this say about the possible complexity of a system of objects? </para>
+		</section>
+<section id="s100"><title>Download code</title>
+<para id="element-882">To download a zipped file containing the code above, click one of the following links:
+</para><list id="element-192" list-type="bulleted"><item>DrJava Elementary Language Level code:  <link resource="DrJava_Code.zip">DrJava_Code.zip</link></item>
+	<item>Standard Java code:  <link resource="Std_Java_Code.zip">Std_Java_Code.zip</link></item>
+</list><para id="element-126">Both of the above codebases include a DrJava project file (.pjt) that can be opened from DrJava to easily manage all the code and test files.</para>
+</section>
+	</content>
+	<glossary id="glossary1">
+<definition id="classdef">
+<term>Class</term>
+<meaning id="id1170410214375">
+An abstract definition of a set of related objects.  A class definition specifies all the invariant behaviors and other attributes common to all the objects in the set.
+</meaning>
+<meaning id="id1170410701403"> In Java, the keyword <code>class</code> denotes the beginning of a class definition.
+</meaning>
+</definition>
+	  <definition id="instantiatedef">
+	    <term>Instantiate</term>
+	    <meaning id="id1170412753471">
+To create an object based on the specifications defined in a class definition.  The object created is called an <term>instance</term> of that class.
+</meaning>
+</definition>
+</glossary>
+</document>

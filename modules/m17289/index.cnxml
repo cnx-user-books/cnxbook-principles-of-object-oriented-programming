@@ -1,0 +1,329 @@
+<document xmlns="http://cnx.rice.edu/cnxml">
+  <title>Binary Tree Structure</title>
+  <metadata xmlns:md="http://cnx.rice.edu/mdml">
+  <md:content-id>m17289</md:content-id>
+  <md:title>Binary Tree Structure</md:title>
+  <md:abstract>Explains the binary tree structure, and gives a sample implementation in Java, along with example tree algorithms.</md:abstract>
+  <md:uuid>d628ec28-8b71-46a2-bf3e-c0507ee6b13e</md:uuid>
+</metadata>
+  <content>
+    <para id="id8861506">Up until now, we have been organizing data in a "linear" fashion: one item after another. The corresponding data structures are the immutable scheme list (<code>IList</code>) and the mutable linear recursive structure (<code>LRStruct</code>).  Now, suppose we want to model something like the following organization chart.</para>
+    <figure id="id9028812">
+      <media id="id1167289185971" alt=""><image src="../../media/graphics1-506e.png" mime-type="image/png"/></media>
+    </figure>
+    <para id="id10394927">A structure of data such as the above is called a <term>tree</term>.  We first design a special kind of <emphasis>mutable</emphasis> tree structure called binary trees.</para>
+    <section id="objectmodel">
+		<title>1. Binary Tree Object Model</title>
+		<definition id="bintreedef">
+			<term>Binary Tree</term>
+			<meaning id="id1167291289359">
+				A (mutable) binary tree, <code>BiTree</code>, can be in an empty state or a non-empty state:
+				<list id="id8480875" list-type="bulleted">
+				  <item>When it is empty, it contains no data. </item>
+				  <item>When it is not empty, it contains a data object called the root element, and 2 distinct <code>BiTree</code> objects called the left subtree and the right subtree.</item>
+				</list>
+			</meaning>
+		</definition>
+	    <para id="id10308109">We implement the above object structure with a combination of state/composite/visitor patterns, in a manner analogous to <link resource="lrs-javadocs.zip"><code>LRStruct</code></link>.</para>
+	    <para id="id10135999">Below is the public interface of the binary tree framework.  <link resource="brs-javadocs.zip">Click here for javadoc documentation.</link></para>
+	    <figure id="id8103656">
+	      <media id="id1167281373302" alt=""><image src="../../media/graphics2-6887.png" mime-type="image/png"/></media>
+	    </figure>
+	    <para id="id8662284">The implementation details are given in the following UML class diagram.  <link resource="brs-javadocs.zip">Click here for javadoc documentation.</link></para>
+	    <figure id="id8954149">
+	      <media id="id1167288186670" alt=""><image src="../../media/graphics3-ad49.png" mime-type="image/png"/></media>
+	    </figure>
+    </section>
+    <section id="impdetails">
+		<title>2. Implementation Details</title>
+	    <note id="id1167316125862" type="Source Code"><label>Source Code</label>
+	      <link resource="brs.zip">Click here for source code.</link>
+	    </note>
+	    <para id="id10551997">The code for <code>BiTree</code> is trivial, as it simply delegates most calls to its state, the root node. The real work is done in the state. The code for <code>EmptyNode</code> and <code>DatNode</code> for the most part are equally trivial. The insertion and removal of the root data of a <code>BiTree</code> require some work and need some explanation. When does it make sense to remove the root node from a (binary) tree? That is, when can one unambiguously remove the root node from a binary tree?</para>
+	    <para id="id10090540">Clearly, when both subtrees of a root node are non-empty, then removing the root node is problematic. However, it makes sense to allow root removal when at least one of the subtrees is empty. Suppose one of the subtrees is empty, then <code>BiTree.remRoot()</code> will change the state of this BiTree to the state of the other subtree. For example, when the left subtree is empty, root removal of the parent tree will set the parent tree to its right subtree.</para>
+		<figure id="nodesource" orient="horizontal">
+			<subfigure id="emptynode">
+				<title>EmptyNode</title>
+				<code id="id1167292988449" display="block">
+/**
+ * Asks the owner tree to set the root node to a new
+ * DatNode containing dat,
+ * resulting in a state change from empty to non-empty.
+ * @param dat a given data Object.
+ * @param owner the context of this state.
+ */
+void insertRoot(Object dat, BiTree owner) {
+	owner.setRootNode(new DatNode(dat));
+}
+
+/**
+ * Throws java.util.NoSuchElementException.
+ * @param owner the BiTree holding this EmptyNode.
+ */
+Object remRoot (BiTree owner) {
+	throw new NoSuchElementException ("EmptyNode.remRoot()");
+}
+
+/**
+ * Calls algo's emptyCase() method to execute the algorithm algo.
+ * @param owner the BiTree holding this EmptyNode.
+ * @param algo an algorithm on owner.
+ * @param inp the input algo needs.
+ * @return the output for the emptyCase() of algo.
+ */
+Object execute(BiTree owner, IVisitor algo, Object... inp) {
+	return algo.emptyCase (owner, inp);
+}</code>
+				<caption>EmptyNode</caption>
+			</subfigure>
+			<subfigure id="datnode">
+				<title>DatNode</title>
+				<code id="id1167299049372" display="block">
+/**
+* Stores data and represents a non-empty state.
+* @author Dung X. Nguyen - Copyright 2005 - All rights reserved.
+*/
+class DatNode extends ANode {
+    /**
+     * Data Invariant: != null.
+     */
+    private BiTree _leftTree = new BiTree ();
+
+    /**
+    * the stored data element.
+    */
+    private Object _dat;
+    /**
+    * Data Invariant: != null.
+    */
+    private BiTree _rightTree = new BiTree ();
+
+    /**
+    * Throws an IllegalStateException because the owner tree is not empty.
+    * @exception IllegaStateException.
+    */
+    void insertRoot(Object dat, BiTree owner) {
+        throw new IllegalStateException ("DatNode.insertRoot().");
+    }
+
+    /**
+    * Removes and returns the root element from the owner tree by asking the
+    * left subtree and, if necessary, the right subtree to help do the job.
+    * The subtrees help determine whether or not the root element can be removed
+    * by executing appropriate anonymous visitors.
+    * @param owner the BiTree holding this DatNode.  Why is it final?
+    * @exception IllegaStateException if both subtrees of owner are non-empty.
+    */
+    Object remRoot(final BiTree owner) {
+        return _leftTree.execute(new IVisitor() {
+            /**
+             * The left subtree is empty. The parent tree can simply become the
+             * right subtree.
+             */
+            public Object emptyCase(BiTree host, Object... notUsed) {
+                owner.setRootNode(_rightTree.getRootNode());
+                return _dat;
+            }
+
+            /**
+             * The left subtree is not empty!  The right subtree must determine
+             * whether or not the parent root can be removed.
+             */
+            public Object nonEmptyCase(BiTree host, Object... notUsed) {
+                 return _rightTree.execute(new IVisitor() {
+
+                    /**
+                     * At this point both the lef and right subtrees are empty.
+                     */
+                    public Object emptyCase(BiTree h, Object... notUsed) {
+                        owner.setRootNode(_leftTree.getRootNode());
+                        return _dat;
+                    }
+
+                    /**
+                    * Both left and right subtrees are not empty!  Cannot remove root.
+                    */
+                    public Object nonEmptyCase(BiTree h, Object... notUsed) {
+                        throw new IllegalStateException ("Both subtrees are non-empty");
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+    * Calls algo's nonEmptyCase() method to execute the algorithm algo.
+    * @param owner the BiTree holding this DatNode.
+    * @param algo an algorithm on owner.
+    * @param inp the input algo needs.
+    * @return the output for the nonEmptyCase() of algo.
+    */
+    Object execute(BiTree owner, IVisitor algo, Object... inp) {
+        return algo.nonEmptyCase (owner, inp);
+    }
+}</code>
+				<caption>DatNode</caption>
+			</subfigure>
+		</figure>
+    </section>
+    <section id="treeprinting">
+		<title>3. The Best Tree Printing Algorithm in Texas</title>
+	    <para id="id6176732">Consider the binary tree displayed in the following "horizontal" manner:</para>
+		<code id="id1167298217725" display="block">
+                                               62                   
+                                 _______________|_________________
+                                |                                 |  
+                               20                                 7
+                           _____|____________               ______|______
+                          |                  |             |             |
+                         [ ]                 18           [ ]           [ ]
+                                    _________|______
+                                   |                |
+                                   39              [ ]
+                               _____|_____
+                              |           |
+                             [ ]         [ ]</code>
+	    <para id="id11450506">Such horizontal display of a tree is not very convenient when the tree is wide.  It is more convenient to display the tree in a "vertical" manner.</para>
+	    <para id="id8102967">The following visitor and its helper print the above tree "vertically" as shown below:</para>
+		<code id="id1167289762007" display="block">
+62
+|_ 20
+| |_ []
+| |_ 18
+|    |_ 39
+|    |  |_ []
+|    |  |_ []
+|    |_ []
+|_ 7
+   |_ []
+   |_ []</code>
+	    <para id="id8082083">Let's study the algorithm.</para>
+		<figure id="printingsource" orient="horizontal">
+			<subfigure id="ToString">
+				<code id="id1167299093323" display="block">
+/**
+ * Computes a String representation of the binary tree host so
+ * that it can be
+ * printed vertically.
+ * @author Dung X. Nguyen - Copyright 2005 - All rights reserved.
+ */
+public class ToString implements IVisitor {
+   
+    public final static ToString Singleton = new ToString ();
+   
+    private ToString () {
+    }
+
+   
+
+    /**
+     * Returns "[]", a String representation of an empty binary
+     * tree.
+     * @param host an empty binary tree.
+     * @param nu not used.
+     * @return String
+    */
+   
+    public Object emptyCase(BiTree host, Object... nu) {
+       
+        return "[]";
+    }
+
+   
+
+    /**
+     * Computes a String representation of the binary tree host
+     * so that it can be printed vertically. There is no '\n'
+     * at the end of the String.  Passes appropriate leftmost
+     * leading String to a
+     * helper visitor to compute the
+     * String representations of the left and right subtrees.
+     * @param host a non-empty binary tree.
+     * @param nu not used.
+     * @return String
+     */
+   
+    public Object nonEmptyCase(BiTree host, Object... nu) {
+        String ls
+        = (String)host.getLeftSubTree().execute(ToStringHelp.Singleton,
+								"|  ");
+       
+        String rs
+        = (String)host.getRightSubTree().execute(ToStringHelp.Singleton,
+								"   ");
+       
+        return (host.getRootDat() + "\n" + ls + "\n" + rs);
+       
+        // EXERCISE FOR STUDENTS: Rewrite using anonymous inner classes.
+    }
+}
+</code>
+			</subfigure>
+			<subfigure id="ToStringHelp">
+				<code id="id6228424" display="block">
+/**
+ * Computes a String representation of the binary tree host so
+ * that it can be printed vertically, given a leftmost leading
+ * string for the two subtrees.
+ * Called by ToString.
+ * Should be implemented as an anonymous inner class in the
+ * call by ToString.
+ * @author Dung X. Nguyen - Copyright 2005 - All rights reserved.
+ */
+public class ToStringHelp implements IVisitor {
+   
+    public final static ToStringHelp Singleton = new ToStringHelp ();
+   
+    private ToStringHelp () {
+    }
+
+   
+
+    /**
+    * Returns "|_[]" to denote an empty tree subtree.
+    * @param host an empty binary (sub)tree.
+    * @param nu not used.
+    * @return String
+    */
+   
+    public Object emptyCase(BiTree host, Object... nu) {
+       
+        return "|_ []";
+    }
+
+   
+
+    /**
+    * Computes a String representation of the binary tree host
+        * so that it can be printed vertically.
+    * There is no '\n' at the end of the String.
+    * @param host a non-empty binary (sub)tree.
+    * @param leftLead[0] appropriate leftmost leading String to
+       * help compute the
+    * String representations of the left and right subtrees.
+    * @return String
+    */
+
+   
+
+    public Object nonEmptyCase(BiTree host, Object... leftLead) {
+        String ls
+            = (String)host.getLeftSubTree().execute(this, 
+                                                
+                                                
+                                                leftLead[0] + "|  ");
+               String rs
+            = (String)host.getRightSubTree().execute(this,
+      						leftLead[0] + "   ");
+       
+        return ("|_ " + host.getRootDat()+ "\n" +
+                leftLead[0] + ls + "\n" +
+                leftLead[0] + rs);
+    }
+}
+</code>
+			</subfigure>
+		</figure>
+	</section>
+  </content>
+</document>

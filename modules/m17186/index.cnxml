@@ -1,0 +1,259 @@
+<document xmlns="http://cnx.rice.edu/cnxml">
+  <title>More Java GUI Programming</title>
+  <metadata xmlns:md="http://cnx.rice.edu/mdml">
+  <md:content-id>m17186</md:content-id>
+  <md:title>More Java GUI Programming</md:title>
+  <md:abstract>Java GUI programming including basic event handling, adapters, and the command and null-object design patterns.</md:abstract>
+  <md:uuid>fcd3e521-d99b-41ba-ba36-eaa14acf7a9a</md:uuid>
+</metadata>
+
+<content>
+    <section id="Frame2">
+      <title>1. JFrame with JButtons and event handlers (Frame2.java)</title>
+      <note id="id5804229" type="Source code">Source code for <code>Frame2.java</code> and the associated <code>Frame2App.java</code> is at the end of this module, or download the entire <link resource="GUI2.zip">archive</link></note><section id="commandpattern">
+        <title>Command Design Pattern</title>
+        <para id="id9130178">When a user clicks on a button, an <code>ActionEvent</code> object is delivered to the button. In order for the button to perform an application specific task, we must register an <code>ActionEventListener</code> to the button and program this event listener to perform the task we want. The <code>ActionListener</code> class is an example of what is called a "<term>command</term>" from the <link url="http://cnx.org/content/m17187/latest/">Command Design Pattern</link>. The code to add an <code>ActionListener</code> to a button looks like:</para><code id="id1171317746458" display="block">myButton.addActionListener(new ActionListener() {
+    public void actionPerformed(ActionEvent e) {
+        // code to perform a task goes here...
+    }
+});</code>
+        <para id="id3294320">The example <code>Frame2</code> (source code at end of the module) shows how to dynamically change the layout manager for a <code>JFrame</code> by calling its <code>setLayout(...)</code> method resulting in a dynamic re-arrangement of the GUI components in the <code>JFrame</code>.</para></section>
+    </section>
+    <section id="Frame3">
+      <title>2. JFrame with JButtons and Adapters (Frame3.java)</title>
+      <note id="id1171316249916" type="Source code">Source code for <code>Frame3.java</code> and the associated <code>IView2World.java</code>, <code>Frame3controller.java</code> and <code>Frame3App.java</code> is at the end of this module, or download the entire <link resource="GUI2.zip">archive</link></note><para id="id11242012"><code>Frame3</code> illustrates how to decouple the view from the rest of the world by having the view communicate to an interface called "adapter". A controller object, <code>Frame3Controller</code> connects the view <code>Frame3</code> to the world by installing a concrete adapter into the view. The adapter is instantiated as anonymous inner object and has access to all of its outer object. The view does not and should not know anything about the world to which it is connected. This adds flexibility to the design.</para><figure id="viewAndController"><media id="id1171315972409" alt=""><image src="../../media/ViewAndController.png" mime-type="image/png"/></media></figure>
+      <section id="nullobjectpattern">
+        <title>Null-Object Pattern</title>
+        <para id="id12469155">In much of the current programming practice, the special value <code>null</code> is often used as a flag to represent a gamut of different and often disconnected concepts such as emptiness and falseness. This can result in a lot of confusion and complex control structures in the code. In our view, <code>null</code> should only be used to denote the non-existence of an object. <code>null</code> is not an object and has no "intelligence" (i.e. behavior) for other objects to interact with. Therefore, whenever we work with a <emphasis>union</emphasis> of objects and discover that one or more of these objects may be referencing a <code>null</code> value, we almost always have to write code to distinguish <code>null</code> as a special case. To avoid this problem, we should think of adding a special object, called the <term>null object</term>, to the <emphasis>union</emphasis> with appropriate behavior that will allow us to treat all object references in a consistent and uniform way, devoid of special case consideration. This design pattern is called the null object pattern. We have used the null object pattern in one occasion: the <code>EmptyNode</code> to represent the empty state of a (mutable) list (<code>LRStruct</code>).</para>
+        <para id="id8698550">In <code>Frame3</code>, the view adapter, <code>_v2wAdapter</code>, is initialized to an (anonymous) <code>IView2World</code> object. It is there to guarantee that _<code>v2wAdapter</code> is always referencing a concrete <code>IView2World</code> object, and , since <code>setV2WAdapter(...)</code> only allows a non-null assignment, we can always call on _<code>v2WAdapter</code> to perform any method without checking for <code>null</code>.</para></section>
+    </section><section id="eip-856"><title>Source code for above classes</title><code id="id1171307579814" display="block"><title>Frame2.java</title>
+package view;
+
+import java.awt.*;       // to use Container.
+import java.awt.event.*; // to use WindowAdpater and WindowEvent.
+import javax.swing.*;    // to use JFrame.
+
+/**
+ * A subclass of AFrame containing two JButtons that have event handler called
+ * "commands" to dynamically switch layout managers when the buttons are clicked
+ * upon.
+ * @author D.X. Nguyen
+ */
+public class Frame2 extends AFrame {
+
+    public Frame2(String title) {
+        super(title);
+    }
+
+    protected void initialize() {
+        Container cp = getContentPane();
+        cp.setLayout(new FlowLayout());
+        JButton jb1 = new JButton("Grid Layout");
+        JButton jb2 = new JButton("Flow Layout");
+        cp.add(jb1);
+        cp.add(jb2);
+        pack();
+
+        /**
+         * Registers an anonymous event handler for the clicking of button jb1.
+         * When jb1 is clicked upon, this event handler will respond by
+         * executing its actionPerformed(...) method.
+         */
+        jb1.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                jb1Clicked(e);
+            }
+        });
+
+        /**
+         * Same as the above.
+         */
+        jb2.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                jb2Clicked(e);
+            }
+        });
+    }
+
+    /**
+     * Dynamically changes to a GridLayout with 2 rows and 1 column.
+     */
+    protected void jb1Clicked(ActionEvent e) {
+        System.out.println("Set GridLayout...");
+        getContentPane().setLayout(new GridLayout(2,1));
+        validate();  // forces this frame to re-layout.
+    }
+
+    /**
+     * Dynamically changes to FlowLayout.
+     */
+    protected void jb2Clicked(ActionEvent e) {
+        System.out.println("Set FlowLayout...");
+        getContentPane().setLayout(new FlowLayout());
+        validate();  // forces this frame to re-layout.
+    }
+}</code>
+
+<code id="id1171318581174" display="block">
+<title>Frame2App.java</title>
+package app;
+
+import javax.swing.*;
+import view.*;
+
+public class Frame2App {
+
+    public static void main(String[] args) {
+        JFrame f = new Frame2("A JFrame with 2 JButtons with event listeners");
+        f.setVisible(true);
+        f.setSize(300, 100);  // Guess what this does!
+        f.setLocation(200, 200);  // Guess what this does!
+
+        // Forces the frame to re-layout its components:
+        f.validate();
+    }
+}</code>
+
+<code id="id1171307313871" display="block">
+<title>Frame3.java</title>
+package view;
+
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+
+/**
+ * Same functionality as Frame2 but uses an adapter interface to communicate
+ * with the outside world instead.  This design allows varying the communication
+ * with the outside world.  How the outside world reacts to the events that
+ * happen to the view is a variant behavior!
+ * Uses the Null-Object Pattern to initialize the adapter avoiding checking for
+ * null.
+ * @author DXN
+ */
+public class Frame3 extends Frame2 {
+
+    // Initializes the adapter to a null object:
+    private IView2World _v2wAdapter = new IView2World() {
+        public Object button1Clicked (ActionEvent e) {
+            return null; // does nothing!
+        }
+        public Object button2Clicked (ActionEvent e) {
+            return null; // does nothing!
+        }
+    };
+
+    public Frame3(String title) {
+        super(title);
+    }
+
+    public void setV2WAdapter(IView2World v2w) {
+        if (null == v2w) {
+            throw new IllegalArgumentException("Argument cannot be null!");
+        }
+        _v2wAdapter = v2w;
+    }
+
+    /**
+     * Tells _v2wAdapter the button click event happens on jb1.
+     */
+    protected void jb1Clicked(ActionEvent e) {
+        _v2wAdapter.button1Clicked(e);
+    }
+
+    /**
+     * Tells _v2wAdapter the button click event happens on jb2.
+     */
+    protected void jb2Clicked(ActionEvent e) {
+        _v2wAdapter.button2Clicked(e);
+    }
+
+}</code>
+
+<code id="id1171315832539" display="block">
+<title>IView2World.java</title>
+package view;
+
+import java.awt.event.*;
+
+/**
+ * Adapter connecting Frame3 (the View) to the outside world.
+ */
+public interface IView2World {
+    /**
+     * Called by Frame3 when its button 1 is clicked.
+     */
+    public Object button1Clicked (ActionEvent e);
+
+    /**
+     * Called by Frame3 when its button 2 is clicked.
+     */
+    public Object button2Clicked (ActionEvent e);
+}</code>
+
+<code id="id1171307339312" display="block">
+<title>Frame3Controller.java</title>
+package controller;
+
+import view.*;
+import java.awt.event.*;
+import javax.swing.JFrame;
+import java.awt.*; // For layout managers.
+
+/**
+ * The controller that instantiates a concrete IView2World object and connects
+ * the world outside of Frame3 (the view) to Frame3.
+ * The concrete adapter is implemented as an anonymous inner classe.
+ */
+public class Frame3Controller {
+
+    public JFrame constructFrame()  {
+        // Local variable needs to be final so that the local inner class
+        // can access it:
+        final Frame3 frame = new Frame3("View and Controller");
+
+        /**
+         * Install as concrete anonymous IView2World adapter in frame, without
+         * frame knowing what the adapter does.
+         */
+        frame.setV2WAdapter(new IView2World()  {
+
+            public Object button1Clicked (ActionEvent e) {
+                frame.getContentPane().setLayout(new GridLayout(2,1));
+                frame.validate();
+                return null;
+            }
+
+            public Object button2Clicked (ActionEvent e) {
+                frame.getContentPane().setLayout(new FlowLayout());
+                frame.validate();
+                return null;
+            }
+        });
+        frame.setVisible(true);
+        return frame;
+    }
+}</code>
+
+        
+<code id="id1171325473686" display="block">
+<title>Frame3App.java</title>
+package app;
+
+import view.*;
+import controller.*;
+
+/**
+ * Instantiates the controller and builds the frame!
+ */
+public class Frame3App {
+
+    public static void main(String[] args) {
+        new Frame3Controller().constructFrame().validate();
+    }
+}</code>
+
+
+</section></content>
+
+</document>

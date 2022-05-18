@@ -1,0 +1,576 @@
+<document xmlns="http://cnx.rice.edu/cnxml">
+  <title>Visitor Design Pattern</title>
+  <metadata xmlns:md="http://cnx.rice.edu/mdml">
+  <md:content-id>m16707</md:content-id>
+  <md:title>Visitor Design Pattern</md:title>
+  <md:abstract>Using the interpreter pattern to implement the overall behavior of a composite structure such as the list structure has one glaring drawback: it presents a static non-extensible interface to the client that cannot handle unforeseen future requirements.  Each time a new behavior is needed to process the composite structure, new methods have to be added to the structure.  As a result, the task of maintaining the code can quickly become unmanageable.
+The root of this problem comes from the lack of delineation between the intrinsic and primitive behaviors of the structure itself and its non-primitive application specific behaviors.  The visitor design pattern offers a solution to this problem by decoupling these two kinds of behaviors into two separate systems of classes, hosts and visitors, that communicate with each other via only their public interfaces.
+Here the hosts are the composite structure with its invariant structural behaviors and the visitors are the infinitely varying algorithms that are to be performed on the structure.  This approach turns a composite structure into a framework where control is inverted: one hands an algorithm to the structure to be executed instead of handing a structure to an algorithm to perform a computation.  The structure is capable of carrying out any conforming algorithm, past, present, or future.
+Such a system of co-operating objects that is not only reusable and extensible, but also easy to understand and maintain.</md:abstract>
+  <md:uuid>4a2737ef-9a2a-4de8-9f8d-54e099952c72</md:uuid>
+</metadata>
+
+<content>
+    <section id="id-758486140291">
+      <title>1. Decoupling Algorithms from Data Structures</title>
+      <para id="id8532341">Recall the current formulation of the immutable list structure using the composite pattern.</para>
+      <figure id="id8874654">
+        <media id="id1166523453299" alt=""><image src="../../media/graphics1-805e.png" mime-type="image/png" height="427" width="443"/></media>
+      </figure>
+      <para id="id9792616"> </para>
+      <para id="id10192854">Each time we want to compute something new, we apply the interpreter pattern add appropriate methods to IList and implement those methods in MTList and NEList.  This process of extending the capability of the list structure is error-prone at best and cannot be carried out if one does not own the source code for this structure. Any method added to the system can access the private fields of MTList and NEList and modify them at will.  In particular, the code can change _fist and _rest of NEList breaking the invariant immutable property the system is supposed to represent. The system so designed is inherently fragile, cumbersome, rigid, and limited.  We end up with a forever changing IList that includes a multitude of unrelated methods.</para>
+      <para id="id9396750">These design flaws come of the lack of delineation between the intrinsic and primitive behavior of the structure itself and the more complex behavior needed for a specific application. The failure to decouple primitive and non-primitive operations also causes reusability and extensibility problems. The weakness in bundling a data structure with a predefined set of operations is that it presents a static non-extensible interface to the client that cannot handle unforeseen future requirements. Reusability and extensibility are more than just aesthetic issues; in the real world, they are driven by powerful practical and economic considerations. Computer science students should be conditioned to design code with the knowledge that it will be modified many times. In particular is the need for the ability to add features after the software has been delivered.  Therefore one must seek to decouple the data structures from the algorithms (or operations) that manipulate it.  Before we present an object-oriented approach to address this issue, let's first eat! </para>
+    </section>
+    <section id="id-0635973044232">
+      <title>2. To Cook or Not To Cook</title>
+      <para id="id7533439">Mary is a vegetarian.  She only cooks and eats vegetarian food.  John is carnivorous.  He cooks and eats meat!  If Mary wants to eat broccoli and cheese, she can learn how to cook broccoli and cheese.  If she wants corn of the cob, she can learn how to cook corn on the cob.  The same goes for John.  If he wants to eat greasy hamburger, he can learn how to cook greasy hamburger.  If he wants to eat fatty hotdog, he can learn how to cook fatty hotdog.  Every time John and Mary want to eat something new, they can learn how to cook it.  This requires that John and Mary to each have a very big head in order to learn all the recipes. </para>
+      <para id="id9130814">But wait, there are people out there called chefs!  These are very special kinds of chefs catering only to vegetarians and carnivores.  These chefs only know how to cook two dishes: one vegetarian dish and one meat dish.  All John and Mary have to do is to know how to ask such a chef to cook their favorite dish.  Mary will only order the vegetarian dish, while John will only order the meat dish! </para>
+      <para id="id10070783">How do we model the vegetarian, the carnivore, the chef, the two kinds of dishes the chef cooks, and how the customer orders the appropriate kind of dish from the chef? </para>
+      <section id="id-926826898544">
+        <title>The Food </title>
+        <para id="id4649085">To simplify the problem, let's treat food as String.  (In a more sophisticated setting, we may want to model food as some interface with veggie and meat as sub-interface.) </para>
+      </section>
+      <section id="id-565890153578">
+        <title>The Food Consumers </title>
+        <para id="id10194868">Vegetarians and carnivores are basically the same animals.  They have the basic ingredients such as salt and pepper to cook food.  They differ in the kind of raw materials they stock to cook their foods and in the way they order food from a chef.  Vegetarians and Carnivores can provide the materials to cook but do not know how to cook!  In order to get any cooked meal, they have to ask a chef to cook for them. We model them as two concrete subclasses of an <foreign>abstract class</foreign> called <code>AEater</code>. <code>AEater</code> has two concrete methods, <code>getSalt</code> and <code>getPepper</code>, and an <cite><cite-title>abstract</cite-title></cite> method called <code>order</code>, as shown in the table below. </para>
+<table id="eip-786" summary="Top-level abstract definition"><title>Top-level abstract definition</title>
+<tgroup cols="1"><tbody>
+  <row>
+    <entry>
+                    <code id="id1166528543645" display="block">
+public abstract class AEater {  
+    public String getSalt() { 
+        return "salt";
+    }
+    public String getPepper() { 
+        return "pepper"; 
+    }
+    /**  
+     * Orders n portions of appropriate food from restaurant r.  
+     */  
+    public abstract String order(IChef r, Integer n);    
+    // NO CODE BODY!
+}</code></entry>
+  </row>
+</tbody>
+
+</tgroup>
+</table><table id="id6216451" summary="Concrete implementations"><title>Concrete implementations</title>
+<tgroup cols="2"><colspec colnum="1" colname="c1"/>
+        <colspec colnum="2" colname="c2"/>
+        <tbody>
+            <row>
+                <entry>
+                    <code id="id1166520259143" display="block">
+public class Vegetarian extends AEater{  
+    public String getBroccoli() { 
+        return "broccoli"; 
+    }    
+    public String getCorn() { 
+        return "corn"; 
+    }    
+    public String order(IChef c, Object n) {
+        // code to be discussed later;  
+    }
+}</code>
+                </entry>
+                <entry>
+                    <code id="id1166526620193" display="block">
+public class Carnivore extends AEater{  
+    public String getMeat() { 
+        return "steak"; 
+    }    
+    public String getChicken() { 
+        return "cornish hen"; 
+    }   
+    public String getDog() {
+        return "polish sausage"; 
+    }    
+    public String order(IChef c, Object n) {     
+    // code to be discussed later;  
+    }
+}</code>
+                </entry>
+            </row>
+        </tbody>
+    
+</tgroup>
+</table></section>
+      <section id="id-589951408689">
+        <title>The Chef</title>
+        <para id="id9712408">The chef is represented as an interface IChef with two methods, one to cook a vegetarian dish and one to cook a meat dish, as shown in the table below.</para>
+        <table id="eip-4" summary="Top-level abstract definition"><title>Top-level abstract definition</title>
+<tgroup cols="1"><tbody>
+  <row>
+    <entry>
+
+                  <code id="id1166524442035" display="block">
+interface IChef  {  
+    String cookVeggie(Vegetarian h, Integer n);
+    String cookMeat(Carnivore h, Integer n);
+}</code>
+
+</entry>
+  </row>
+</tbody>
+
+</tgroup>
+</table><table id="id9728938" summary="Concrete implementations"><title>Concrete implementations</title>
+<tgroup cols="2"><colspec colnum="1" colname="c1"/>
+            <colspec colnum="2" colname="c2"/>
+            <tbody>
+              <row>
+                <entry>
+                  <code id="id1166525654678" display="block">  
+public class ChefWong implements IChef {
+
+    public static final ChefWong Singleton
+        = new ChefWong();
+
+    private ChefWong() {}
+
+    public String cookVeggie(
+        Vegetarian h, Integer n) {
+        
+        return  n + " portion(s) of " +
+                h.getCarrot() + ", " + 
+                h.getSalt();
+    }
+
+    public String cookMeat(
+        Carnivore h, Integer n) {
+
+        return  n + " portion(s) of " +
+                h.getMeat() + ", " +
+                h.getPepper();
+    }
+}</code></entry>
+                <entry>
+                  <code id="id1166523141382" display="block">  
+public class ChefZung implements IChef {
+
+    public static final ChefZung Singleton
+        = new ChefZung();
+
+    private ChefZung() {}
+
+    public String cookVeggie(
+        Vegetarian h, Integer n) {
+
+        return  n + " portion(s) of " +
+                h.getCorn() + ", " +
+                h.getSalt();
+    }
+
+    public String cookMeat(
+        Carnivore h, Integer n) {
+
+        return  n + " portion(s) of " +
+                h.getChicken() + ", " +
+                h.getPepper() +
+                ", " + h.getSalt();
+    }
+}</code></entry>
+              </row>
+            </tbody>
+          
+
+
+</tgroup>
+</table></section>
+      <section id="id-671852466012">
+        <title>Ordering Food From The Chef</title>
+        <para id="id8919554">To order food from an IChef , a Vegetarian object simply calls cookVeggie, passing itself as one of the parameters, while a Carnivore object would call cookMeat, passing itself as one of the parameters as well.  The Vegetarian  and Carnivore objects only deal with the IChef object at the highest level of abstraction and do not care what the concrete IChef is.  The polymorphism machinery guarantees that the correct method in the concrete  IChef will be called and the appropriate kind of food will be returned to the AEater caller  The table below shows the code for Vegetarian  and Carnivore, and sample client code using these classes.</para>
+        <table id="id9808220" summary="Concrete implementations"><title>Concrete implementations</title>
+<tgroup cols="2"><tbody>
+              <row>
+                <entry>
+                  <code id="id1166522556294" display="block">
+public class Vegetarian extends AEater {
+    // other methods elided
+    public String order(IChef c, int n) {
+        return c.cookVeggie(this, n);
+    }
+}</code>
+                </entry>
+                <entry>
+                  <code id="id1166525881317" display="block">
+public class Carnivore extends AEater {
+    // other methods elided
+    public String order(IChef c, int n) {
+        return c.cookMeat(this, n);
+    }
+}</code>
+                </entry>
+              </row>
+
+            </tbody>
+          
+</tgroup>
+</table>
+<table id="eip-20" summary="Client code"><title>Client code</title>
+<tgroup cols="1"><tbody>
+  <row>
+    <entry>
+<code id="fs-id1164892620235" display="block">
+public void party(AEater e, IChef c, int n) {
+    System.out.println(e.order(c, n));
+}
+
+    // blah blah blah...
+    AEater John = new Carnivore();
+    AEater Mary = new Vegetarian();
+    party(Mary, ChefWong.Singleton, 2);
+    party(John,ChefZung.Singleton, 1);
+     
+</code></entry>
+  </row>
+</tbody>
+
+</tgroup>
+</table><para id="id8623448"> </para>
+        <para id="id7062182">The above design is an example of what is called the visitor pattern.</para>
+        <list id="id9766160" list-type="bulleted">
+          <item>The abstract class AEater and its concrete subclasses are called the hosts.  The method public String order(IChef c, Object n) is called the hook method.  Each concrete subclasses of AEater knows exactly to call the appropriate method on the IChef parameter, but does know and need not how the IChef concretely perforns its task.  This allows an open-ended number of ways to cook the appropriate kinds of food. </item>
+          <item>The chef interface IChef and all of  its concrete implementations are called visitors.  When an IChef performs cookMeat/cookVeggie, it knows that its host is a Carnivore/Vegetarian and can only call the methods of Carnivore/Vegetarian to cook a dish.  Java static type checking will flag an error should there be a call on the host to getCarot in the method cookMeat.  This is makes the interaction between hosts (Vegetarian and Carnivore) and visitors (IChef and all of its concrete implementations) much more robust. </item>
+        </list>
+      </section>
+    </section>
+    <section id="id-64664230795">
+      <title>3. The Visitor Pattern</title>
+      <para id="id8930500">The <link url="http://cnx.org/content/m26430/latest/">visitor pattern</link> is a pattern for communication and collaboration between two union patterns: a "host" union and a "visitor" union.  An abstract visitor is usually defined as an interface in Java.  It has a separate method for each of the concrete variant of the host union.  The abstract host has a method (called the "hook") to "accept" a visitor and leaves it up to each of its concrete variants to call the appropriate visitor method.  This "decoupling" of the host's structural behaviors from the extrinsic algorithms on the host permits the addition of infinitely many external algorithms without changing any of the host union code.  This extensibility only works if the taxonomy of the host union is stable and does not change.  If we have to modify the host union, then we will have to modify ALL visitors as well!</para><figure id="id9882755">
+        <media id="id1166522432789" alt=""><image src="../../media/graphics2-1fb5.png" mime-type="image/png" height="902" width="618"/></media>
+      </figure>
+      <para id="id9109430"> </para>
+      <para id="id9629280">NOTE: All the "state-less" visitors, that is visitors that contain no non-static fields should be singletons.  Visitors that contain non-static fields should not be singletons.</para>
+    </section>
+    <section id="id-280335815352">
+      <title>4.  Fundamental Object-Oriented Design Methodology (FOODM)</title>
+      <list id="id8757654" list-type="enumerated">
+        <item>
+          <emphasis>Identify and separate the variant and the invariant behaviors. </emphasis>
+        </item>
+        <item>
+          <emphasis>Encapsulate the invariant behaviors into a system of classes. </emphasis>
+        </item>
+        <item>
+          <emphasis>Add "hooks" to this class to define communication protocols with other classes. </emphasis>
+        </item>
+        <item>
+          <emphasis>Encapsulate the variant behaviors into a union of classes that comply with the above protocols. </emphasis>
+        </item>
+      </list>
+      <para id="id9789730">The result is a flexible system of co-operating objects that is not only reusable and extensible, but also easy to understand and maintain.</para>
+      <para id="id10406007">Let us illustrate the above process by applying it to the design of the immutable list structure and its algorithms.</para>
+      <list id="id10032257" list-type="enumerated">
+        <item>Here, the invariant is the intrinsic and primitive behavior of the list structure, <code>IList</code>, and the variants are the multitude of extrinsic and non-primitive algorithms that manipulate it, <code>IListAlgo</code>. </item>
+        <item>The recursive list structure is implemented using the composite design pattern and encapsulated with a minimal and complete set of primitive structural operations:  <code>getFirst()</code> and <code>getRest()</code>.  </item>
+        <item>The hook method <code>Object execute(IListAlgo ago,  Object inp)</code> defines the protocols for operating on the list structure. The hook works as if a <code>IList</code> announces to the outside world the following protocol: <cite><cite-title>If you want me to execute your algorithm, encapsulate it into an object of type IListAlgo, hand it to me together with its inp object as parameters for my execute(). I will send your algorithm object the appropriate message for it to perform its task, and return you the result. </cite-title></cite>
+            <list id="id9133482" list-type="bulleted">
+                <item><code>emptyCase(...)</code> should be the part of the algorithm that deals with the case where I am empty. </item>
+                <item><code>nonEmptyCase(...)</code> should be the part of the algorithm that deals with the case where I am not empty.” </item>
+            </list>
+        </item>
+        <item><code>IListAlgo</code> and all of its concrete implementations forms a union of algorithms classes that can be sent to the list structure for execution. </item>
+      </list>
+      <para id="id8773865">Below is the UML class diagram of the resulting list design.  <link url="http://www.clear.rice.edu/comp201/08-spring/lectures/visitor/listFW/doc/">Click here to see the full documentation.</link>  <link url="http://www.clear.rice.edu/comp201/08-spring/lectures/lec17/listFW.zip">Click here to see the code</link>. </para><figure id="id8857397">
+        <media id="id3573195" alt=""><image src="../../media/graphics3-d3cd.png" mime-type="image/png" height="627" width="694"/></media>
+      </figure>
+      <para id="id10191382">The above design is nothing but a special case of the <emphasis>Visitor Pattern</emphasis>.  The interface <code>IList</code> is called the <emphasis>host</emphasis> and its method <code>execute()</code> is called a "<emphasis>hook</emphasis>" to the <code>IListAlgo</code><emphasis>visitors</emphasis>.  Via polymorphism, <code>IList</code> knows exactly what method to call on the specific <code>IListAlgo</code> visitor.  This design turns the list structure into a (miniature) framework where control is inverted: one hands an algorithm to the structure to be executed instead of handing a structure to an algorithm to perform a computation. Since an <code>IListAlgo</code> only interacts with the list on which it operates via the list’s public interface, the list structure is capable of carrying out any conforming algorithm, past, present, or future. This is how reusability and extensibility is achieved.</para>
+    </section>
+    <section id="id-809705841258">
+      <title>5. List Visitor Examples</title>
+      <table id="eip-430" summary="Singleton constructor for list algorithm"><title>Singleton constructor for list algorithm</title>
+<tgroup cols="1"><tbody>
+  <row>
+    <entry>
+<code id="eip-id1172198935510" display="block">
+/**
+ * Computes the length of the IList host.
+ */
+public class GetLength implements IListAlgo {
+    /**
+     * Singleton Pattern.
+     */
+    public static final GetLength Singleton = new GetLength();
+    private GetLength() {  }
+</code>
+</entry>
+  </row>
+</tbody>
+
+
+</tgroup>
+</table><table id="id9088895" summary="Empty and non-empty cases of algorithm"><title>Empty and non-empty cases of algorithm</title>
+<tgroup cols="2"><colspec colnum="1" colname="c1"/>
+          <colspec colnum="2" colname="c2"/>
+          <tbody>
+
+            <row>
+              <entry>
+                <code id="id3298640" display="block">  
+/**
+ * Returns Integer(0).
+ * @param nu not used
+ * @return Integer(0)
+ */
+public Object emptyCase(
+    MTList host, Object... nu) {
+
+    return 0;
+}</code></entry>
+              <entry>
+                <code id="id1166523577649" display="block">  
+/**
+ * Return the length of the host's rest 
+ * plus 1.
+ * @param nu not used.
+ * @return Integer &gt; 0.
+ */
+public Object nonEmptyCase(
+    NEList host, Object... nu) {
+
+    Object restLen 
+        = host.getRest().execute(this);
+    return 1 + (Integer)restLen);
+}</code></entry>
+            </row>
+          </tbody>
+        
+
+
+</tgroup>
+</table><table id="eip-324" summary="Singleton constructor for list algorithm"><title>Singleton constructor for list algorithm</title>
+<tgroup cols="1"><tbody>
+            <row>
+              <entry>
+                <code id="id1166523676737" display="block">  
+package listFW;
+/**
+ * Computes a String reprsentation of IList showing a left parenthesis followed
+ * by elements of the IList separated by commas, ending with with a right parenthesis.
+ */
+public class ToStringAlgo implements IListAlgo {
+    public static final ToStringAlgo Singleton = new ToStringAlgo();
+    
+    private ToStringAlgo() {  }
+</code>
+              </entry>
+            </row>
+</tbody>
+
+
+
+
+</tgroup>
+</table><table id="id9302912" summary="Empty and non-empty cases of algorithm"><title>Empty and non-empty cases of algorithm</title>
+<tgroup cols="2"><colspec colnum="1" colname="c1"/>
+          <colspec colnum="2" colname="c2"/>
+          <tbody>
+
+            <row>
+              <entry>
+                <code id="id1166521710297" display="block">  
+/**
+ * Returns "()".
+ */
+public Object emptyCase(
+    MTList host, Object... inp) {
+
+    return "()";
+}</code></entry>
+              <entry>
+                <code id="id1166521897290" display="block">  
+/**
+ * Passes "(" + first to the rest of IList 
+ * and asks for help to complete the 
+ * computation.
+ */
+public Object nonEmptyCase(
+    NEList host, Object...  inp) {
+
+    return host.getRest().execute(
+        ToStringHelper.Singleton, 
+        "(" + host.getFirst());
+}
+} //closing parenthesis for the class
+</code></entry>
+            </row>
+          </tbody>
+        
+
+
+</tgroup>
+</table><para id="id6665006"> </para>
+      <table id="eip-336" summary="Singleton constructor for list algorithm"><title>Singleton constructor for helper visitor</title>
+<tgroup cols="1"><tbody>
+            <row>
+              <entry>
+                <code id="id1166519802785" display="block">
+/**
+ * Helps ToStringAlgo compute the String representation of the rest of the list.
+ */
+class ToStringHelper implements IListAlgo {
+    public static final ToStringHelper Singleton = new ToStringHelper();
+    private ToStringHelper() {   }
+</code>
+              </entry>
+            </row>
+</tbody>
+
+</tgroup>
+</table><table id="id9525726" summary="Empty and non-empty cases of helper visitor"><title>Empty and non-empty cases of algorithm</title>
+<tgroup cols="2"><colspec colnum="1" colname="c1"/>
+          <colspec colnum="2" colname="c2"/>
+          <tbody>
+
+            <row>
+              <entry>
+                <code id="id1166519031567" display="block">
+/**
+ * Returns the accumulated String + ")".
+ * At end of list: done!
+ */
+public Object emptyCase(
+    MTList host, Object... acc) {
+
+    return  acc[0] + ")";
+}</code>
+              </entry>
+              <entry>
+                <code id="id1166517541893" display="block">
+/**
+ * Continues accumulating the String 
+ * representation by appending ", " + first 
+ * to acc and recurse!
+ */
+public Object nonEmptyCase(
+    NEList host, Object... acc) {
+
+    return host.getRest().execute(
+        this, 
+        acc[0] + ", " + host.getFirst());
+    }
+}</code>
+              </entry>
+            </row>
+          </tbody>
+        
+
+
+
+</tgroup>
+</table><para id="id8803450">We now can use to ToStringAlgo to implement the toString() method of an IList.</para>
+      <table id="id10977927" summary="Concerete empty and non-empty list definitions">
+<tgroup cols="2"><colspec colnum="1" colname="c1"/>
+          <colspec colnum="2" colname="c2"/>
+          <tbody>
+            <row>
+              <entry>
+                <code id="id1166532687888" display="block">  
+package listFW;
+
+public class MTList implements IList {
+
+    /**
+     * Singleton Pattern
+     */
+    public final static MTList Singleton 
+        = new MTList();
+
+        private MTList() { }
+
+        /**
+         * Calls the empty case of the 
+         * algorithm algo, passing to it 
+         * itself as the host parameter
+         * and the given input inp as the 
+         * input parameter.
+         * This method is marked as final 
+         * to prevent all subclasses from 
+         * overriding it. Finalizing a 
+         * method also allows the compiler 
+         * to generate more efficient 
+         * calling code.
+         */
+         public final Object execute(
+             IListAlgo algo, 
+             Object... inp) {
+
+            return algo.emptyCase(
+                this, inp);
+         }
+         public String toString() {
+            return (String)ToStringAlgo
+                .Singleton.emptyCase(this);
+         }
+    }</code></entry>
+              <entry>
+                <code id="id1166522634554" display="block">  
+package listFW;
+
+public class NEList implements IList {
+    /**
+     * The first data element.
+     */
+    private Object _first; 
+    /**
+     * The rest or "tail" of this NEList.
+     * Data Invariant: _rest != null;
+     */
+    private IList _rest;
+    /**
+     * Initializes this NEList to a given 
+     * first and a given rest.
+     * @param f This NEList's first element 
+     * @param r !=null; rest of this NEList.
+     */
+    public NEList(Object f, IList r) {
+        _first = f;
+        _rest = r;
+    }
+    /**
+     * Returns the first data element of 
+     * this NEList.
+     * Marked final for the above reasons.
+     */
+    public final Object getFirst() {
+        return _first;
+    }
+    /**
+     * Returns the rest of this NEList which
+     * is an IList.
+     * Marked final for the above reasons.
+     */
+    public final IList getRest() {
+       return _rest;
+    } 
+    /**
+     * Calls the nonEmptyCase method of the 
+     * IListAlgo parameter, passing itself 
+     * as the host parameter and the given 
+     * input as the input parameter.
+     * Marked final for the above reasons.
+     */
+    public final Object execute(
+        IListAlgo algo, Object... inp) {
+        return algo.nonEmptyCase(this, inp);
+    }
+    public String toString() {
+        return (String)ToStringAlgo
+            .Singleton.nonEmptyCase(this);
+    }
+}</code></entry>
+            </row>
+          </tbody>
+        
+
+
+</tgroup>
+</table><para id="id10214268">
+        <code/>
+      </para>
+      <para id="id9436047">Download the above code <link url="http://www.owlnet.rice.edu/~comp201/08-spring/lectures/lec17/listFW.zip">here</link>.</para>
+    </section>
+  </content>
+</document>

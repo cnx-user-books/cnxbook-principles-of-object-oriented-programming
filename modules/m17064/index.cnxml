@@ -1,0 +1,224 @@
+<document xmlns="http://cnx.rice.edu/cnxml">
+  <title>Ordering Object and Priority Queue</title>
+<metadata xmlns:md="http://cnx.rice.edu/mdml">
+  <md:content-id>m17064</md:content-id>
+  <md:title>Ordering Object and Priority Queue</md:title>
+  <md:abstract>The module describes comparator objects for determining a binary order and builds a generalized priority queue with it.</md:abstract>
+  <md:uuid>c06205ec-ab41-4ab6-90d4-2a3a695a0cc1</md:uuid>
+</metadata>
+<featured-links>
+  <!-- WARNING! The 'featured-links' section is read only. Do not edit below.
+       Changes to the links section in the source will not be saved. -->
+    <link-group type="supplemental">
+      <link url="http://cnx.org/content/m17101/latest/" strength="3">Restricted Access Containers</link>
+    </link-group>
+    <link-group type="prerequisite">
+      <link url="http://cnx.org/content/m16707/latest/" strength="3">Visitor Design Pattern</link>
+    </link-group>
+  <!-- WARNING! The 'featured-links' section is read only. Do not edit above.
+       Changes to the links section in the source will not be saved. -->
+</featured-links>
+<content>
+    <section id="eip-661"><title>Order Relation</title>
+	<para id="fs-id1164698261954">When comparing two objects, there are two ways to look at the comparison behavior, which creates a notion of ordering between the two objects:  </para>
+    <list id="eip-765" list-type="enumerated" number-style="upper-alpha"><item><emphasis>Each object knows how to compare itself</emphasis> -- Comparison is considered intrinsic to the object and is part of its behavior.</item>
+	<item><emphasis>Comparison is done by an external object</emphasis> -- A third object is introduced that contains the ability to compare two objects.</item>
+</list><para id="eip-796">These two different outlooks on binary object ordering will be explored below in terms of the two Java interfaces that are used to model them.</para><section id="fs-id10683415"><title><link url="http://java.sun.com/j2se/1.4/docs/api/java/lang/Comparable.html"><code><emphasis effect="bold">java.lang.Comparable</emphasis></code></link></title>
+    <para id="id6650982">There are many computing tasks that require performing some sort of comparison between data objects.  A few data types are endowed with a "natural" ordering of their values.  The integers have a natural ordering "less or equal to", labeled "&lt;=", defined as follows.</para>
+    <para id="id1168060357817"><quote id="fs-id7161268">n &lt;= m iff m = n + k, for some non-negative integer k</quote>   (<emphasis effect="bold">Note</emphasis>: a rigorous mathematical definition of the set of non-negative integers is beyond the scope of this lecture).</para>
+    <para id="id8723205">The above natural order of the integers is a concrete instance of an abstract concept called an order relation.  An order relation on a set S is a boolean function R on S x S that is</para>
+    <list id="id8097593" list-type="bulleted">
+      <item>reflexive: R(x, x) is true for all x in S, </item>
+      <item>anti-symmetric: R(x,y) and R(y,x) implies x = y, for all x, y in S, and  </item>
+      <item>transitive: R(x, y) and R(y, z) implies R(x, z), for all x, y, z in S. </item>
+    </list>
+    <para id="id5001922">To model order relations that are naturally endowed in certain types of data objects, Java provides an interface called <link url="http://java.sun.com/j2se/1.4/docs/api/java/lang/Comparable.html"><emphasis><code>Comparable</code></emphasis></link>, which has exactly one method called</para>
+    <para id="id7279670"><code><emphasis effect="italics">int compareTo(Object rhs)</emphasis></code>, defined abstractly as</para>
+    <list id="id7418985" list-type="bulleted">
+      <item><code>x.compareTo(y) &lt; 0</code> means <code>x is "less than" y</code>, </item>
+      <item><code>x.compareTo(y) == 0</code> means <code>x is "equal to" y</code>, and </item>
+      <item><code>x.compareTo(y) &gt; 0</code> means <code>y is "less than" x</code>. </item>
+    </list>
+    <para id="id8094221">For example, the <code>Integer</code> class implements the <code>Comparable</code> interface as follows.  If <code>x</code> and <code>y</code> are <code>Integer</code> objects then,</para>
+    <list id="id1168067139903" list-type="bulleted">
+      <item><code>x.compareTo(y) &lt; 0</code> means <code>x &lt; y</code>, </item>
+      <item><code>x.compareTo(y) == 0</code> means <code>x == y</code>, and </item>
+      <item><code>x.compareTo(y) &gt; 0</code> means <code>y &lt; x</code>. </item>
+    </list>
+    <para id="id8368474">Common data types that have a natural ordering among their values, such as <code>Double</code>, <code>String</code>, <code>Character</code>, all implement <code>Comparable</code>.</para><list id="eip-437"><title>Advantages and disadvantages </title><item>Advantages
+<list id="eip-id16868581">
+			<item>Objects carry their ability to be compared with them and thus can be involved in comparison operations anywhere.</item>
+			<item>The comparison operation is invariant and thus consistent in all situations.</item>
+		</list></item>
+	<item>Disadvantages
+<list id="eip-id15564304">
+<item>Comparison operation cannot be changed to match different situations.</item>
+</list>
+</item></list>
+    </section>
+	<section id="fs-id9618530">
+	<title>
+      <link url="http://java.sun.com/j2se/1.4/docs/api/java/util/Comparator.html">
+        <code><emphasis effect="bold">java.util.Comparator</emphasis></code>
+      </link>
+    </title>
+    <para id="id6436507">Most of the time, the ordering among the data objects is an extrinsic operation imposed on the object by the user of the objects.  For example, the Pizza objects in <link url="http://www.owlnet.rice.edu/~comp201/08-spring/assignments/hw02"><emphasis effect="underline">homework 2</emphasis></link> have no concepts of comparing among themselves, however, the user can impose an ordering on them by comparing their price/area ratios or their profits.  To model extrinsic ordering relation, Java provides an interface in the <code>java.util</code> package called <link url="http://java.sun.com/j2se/1.4/docs/api/java/util/Comparator.html"><code><emphasis effect="underline">Comparator</emphasis></code></link>, which has exactly two methods:</para>
+    <list id="id8669717" list-type="bulleted"><item><code><emphasis effect="italics">int compare(Object x, Object y)</emphasis></code>, to model the ordering  
+	  <list id="id2572980" list-type="bulleted">
+			<item><code>compare(x, y) &lt; 0</code> means <code>x is "less than" y</code>, </item>
+			<item><code>compare(x, y) == 0</code> means <code>x is "equal to" y</code>, and </item>
+			<item><code>compare(x, y) &gt; 0</code>  means <code>yis "less than" x</code>, and </item>
+		</list></item>
+	<item><code><emphasis effect="italics">boolean equals(Object x)</emphasis></code>, to model equality of <code>Comparators</code>.  Unlike the <code>equals</code> method of most objects, equality of <code>Comparator</code>s also requires that their comparison behavior be identical.</item>
+</list>
+    <para id="id8291688">In most applications, when we implement a <code>Comparator</code> interface, we only need to override the <code>compare(...)</code> method and simply inherit the <code>equals(...)</code> method from <code>Object</code>.</para><list id="eip-57"><title>Advantages and disadvantages</title><item>Advantages
+<list id="eip-id12624956">
+			<item>Object ordering can be considered variant and be redefined for different situations.</item>
+			<item>Creating composite comparison behavior can be easily acheived by decorating or other composite techniques.</item>
+		</list></item>
+	<item>Disadvantages
+<list id="eip-id10028030">
+			<item>Objects are not intrinsically comparable, requiring the inclusion of an otherwise disconnected entity in the system.</item>
+		</list>
+	</item></list>
+	</section>
+    <exercise id="eip-87"><problem id="eip-1000">
+		<para id="eip-283">
+    Implement a <code>Comparator</code> class that will compare <code>Integer</code> objects.
+  </para>
+	</problem>
+</exercise>
+    </section>
+    <section id="fs-id4811062"><title>In-Order Insertion Example</title><para id="eip-482">
+  Recall the problem of inserting an <code>Integer</code> object in order into a sorted list of <code>Integers</code>. Instead of writing an algorithm that only works for <code>Integer</code>, we can write an algorithm that will work for any <code>Object</code> that can be compared by some <code>Comparator</code>. The table below contrasts the insert in order algorithm for Integer and the insert in order algorithm that uses a <code>Comparator</code> as a strategy (as in strategy pattern) for comparison. Both are algorithms for <code>LRStruct</code>, the mutable list.
+</para><para id="eip-466">First, let's look at a regular in-order insertion algorithm that works only on <code>Integer</code> objects because the comparison technique is hard-coded in:</para><code id="eip-181" display="block"><title><code>InsertInOrderLRS</code> Visitor class </title>
+import lrs.*;
+
+public class InsertInOrderLRS implements IAlgo {
+
+  public static final InsertInOrderLRS Singleton = new InsertInOrderLRS();
+
+  private InsertInOrderLRS() {
+  }
+
+  /**
+  * Simply inserts the given parameter n at the front.
+  * @param host an empty LRStruct.
+  * @param n an Integer to be inserted in order into host.
+  * @return LRStruct
+  */
+  public Object emptyCase(LRStruct host, Object... n) {
+    return host.insertFront(n[0]);
+  }
+
+  /**
+  * Based on the comparison between first and n,
+  * inserts at the front or recurs!
+  * @param host a non-empty LRStruct.
+  * @param n an Integer to be inserted in order into host.
+  * @return LRStruct
+  */
+  public Object nonEmptyCase(LRStruct host, Object... n) {
+
+    if (n[0] &lt; (Integer)host.getFirst();) {  // could use Integer.compareTo() 
+      return host.insertFront(n[0]);
+    }
+    else {
+      return host.getRest().execute(this, n[0]);
+    }
+  }
+}
+<caption>A visitor to an <code>LRStruct</code> that performs an in-order insertion, but only for <code>Integer</code> objects.</caption></code><para id="eip-982">Now let's look at how the simple substitution of a <code>Comparator</code> for the hard-coded comparison allows the otherwise identical code to be used for any objects.   All one has to do is to supply the desired <code>Comparator</code> instance that matches the type of objects stored in the <code>LRStruct</code>.  Here is the implementation of a visitor to an <code>LRStruct</code> that performs an in-order insertion, for any objects that are comparable with the given <code>Comparator</code>:</para>
+
+<code id="eip-334" display="block"><title><code>InsertInOrder</code> Visitor class</title>
+import lrs.*;
+import java.util.*;
+
+public class InsertInOrder implements IAlgo {
+
+  private Comparator _order;
+
+  public InsertInOrder(Comparator ord) {
+      _order = ord;
+  }
+
+  /**
+  * Simply inserts the given parameter n at the front.
+  * @param host an empty LRStruct.
+  * @param n an Object to be inserted in order into host,
+  *   based on the given Comparator.
+  * @return LRStruct
+  */
+  public Object emptyCase(LRStruct host, Object... n) {
+    return host.insertFront(n[0]);
+  }
+
+  /**
+  * Based on the comparison between first and n,
+  * inserts at the front or recurs!
+  * @param host a non-empty LRStruct.
+  * @param n an Object to be inserted in order into host,
+  *   based on the given Comparator.
+  * @return LRStruct
+  */
+  public Object nonEmptyCase(LRStruct host, Object... n) {
+    if (_order.compare(n[0], host.getFirst()) &lt; 0) {
+      return host.insertFront(n[0]);
+    }
+    else {
+      return host.getRest().execute(this, n[0]);
+    }
+  }
+}
+</code></section><section id="id8765204">
+      <title>3. Priority Queue</title>
+      <para id="id4614685">The <code>InsertInOrder</code> algorithm given in the above can be used as part of a strategy for a <link document="m17101">Restricted Access Container</link> ("RAC") called <term>priority queue</term>.   In the code below, it is assumed that "smaller" objects have higher priority, i.e. will be retrieved from the RAC before "larger" objects.  The code also shows how, if the RAC elements are <code>Comparable</code> objects, that a <code>Comparator</code> could be used to provide their ordering in the RAC, even to the point of reversing their order if desired.</para><code id="eip-715" display="block"><title><code>PQComparatorRACFactory</code> priority queue implementation</title>package rac;
+
+import lrs.*;
+import lrs.visitor.*;
+import java.util.*;
+
+/*
+ * Implements a factory for restricted access containers that
+ * return the ``highest priority'' item.
+ */
+public class PQComparatorRACFactory extends ALRSRACFactory {
+
+    private Comparator _comp;
+
+    /**
+     * Used when the items in the container are Comparable objects.
+     */
+    public PQComparatorRACFactory() {
+        _comp = new Comparator() {
+            public int compare(Object x, Object y) {
+                /*
+                 * Intentionally reverse the ordering so that the
+                 * largest item will be first, just to show that it can be done.
+                 */
+                return ((Comparable)y).compareTo(x);
+            }
+        };
+    }
+
+    /**
+     * Used when we want to prioritize the items according to a given Comparator.
+     * @param comp the item that is smallest according to comp has the highest
+     * priority.
+     */
+    public PQComparatorRACFactory(Comparator comp) {
+        _comp = comp;
+    }
+
+    /**
+     * Create a container that returns the item with the highest priority
+     * according to a given Comparator.
+     */
+    public IRAContainer makeRAC() {
+        return new LRSRAContainer(new InsertInOrder(_comp));
+    }
+}
+<caption>A priority queue can easily be implemented from a RAC by using a <code>Comparator</code>.</caption></code>
+    </section>
+  </content>
+</document>

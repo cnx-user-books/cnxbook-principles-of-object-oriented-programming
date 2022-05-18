@@ -1,0 +1,51 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:md="http://cnx.rice.edu/mdml">
+	<title>UML Diagrams</title>
+	<metadata><md:content-id>undefined</md:content-id><md:title/><md:uuid>d0efa8cf-31e6-4308-b6e0-3ee54108717f</md:uuid>
+</metadata>
+	<content>
+		<para id="p10">Unified Modeling Language ("UML") is the industry standard "language" for describing, visualizing, and documenting object-oriented (OO) systems.  UML is a collection of a variety of diagrams for differing purposes.   Each type of diagram models a particular aspect of OO design in an easy to understand, visual manner.  The UML standard specifies exactly how the diagrams are to be drawn and what each component in the diagram means.   UML is not dependent on any particular programming language, instead it focuses one the fundamental concepts and ideas that model a system.   Using UML enables anyone familiar with its specifications to instantly read and understand diagrams drawn by other people.        There are UML diagram for modeling static class relationships, dynamic temporal interactions between objects, the usages of objects, the particulars of an implementation, and the state transitions of systems  </para>
+		<para id="p20">In general, a UML diagram consists of the following features:<list list-type="bulleted" id="p20-l10">
+				<item><emphasis>Entities</emphasis>:  These may be classes, objects, users or systems behaviors.  </item>
+				<item><emphasis>Relationship Lines</emphasis> that model the relationships between entities in the system.  <list list-type="bulleted" id="p20-l10-l10">
+						<item><emphasis>Generalization </emphasis>-- a solid line with an arrow that points to a higher abstraction of the present item.  </item>
+						<item><emphasis>Association </emphasis>--  a solid line that represents that one entity uses another entity as part of its behavior.</item>
+						<item><emphasis>Dependency </emphasis>-- a dotted line with an arrowhead that shows one entity depends on the behavior of another entity.</item>
+					</list></item>
+			</list><!-- Insert module text here --></para>
+		<section id="s10">
+			<title>Class Diagrams</title>
+			<para id="p25">UML class diagrams model static class relationships that represent the fundamental architecture of the system.   Note that these diagrams describe the relationships between <emphasis>classes</emphasis>, not those between specific <emphasis>objects </emphasis>instantiated from those classes.   Thus the diagram applies to <emphasis>all the objects</emphasis> in the system.  </para>
+			<para id="p30">A class diagram consists of the following features:<list list-type="bulleted" id="p30-l10">
+					<item><emphasis>Classes</emphasis>:  These titled boxes represent the classes in the system and contain information about the name of the class, fields, methods and access specifiers.  Abstract roles of the class in the system can also be indicated.</item>
+					<item><emphasis>Interfaces</emphasis>: These titled boxes represent interfaces in the system and contain information about the name of the interface and its methods.</item>
+					<item><emphasis>Relationship Lines</emphasis> that model the relationships between classes and interfaces in the system.  <list list-type="bulleted" id="p30-l10-l10">
+							<item><emphasis>Generalization </emphasis><list list-type="bulleted" id="p30-l10-l10-l10">
+									<item><emphasis>Inheritance</emphasis>: a solid line with a solid arrowhead that points from a sub-class to a superclass or from a sub-interface to its super-interface. </item>
+									<item><emphasis>Implementation</emphasis>: a dotted line with a solid arrowhead that points from a class to the interface that it implement</item>
+								</list></item>
+							<item><emphasis>Association </emphasis>--  a solid line with an open arrowhead that represents a "has a" relationship.   The arrow points from the containing to the contained class.   Associations can be one of the following two types or not specified.<list list-type="bulleted" id="p30-l10-l10-l20">
+									<item><emphasis>Composition</emphasis>: Represented by an association line with a solid diamond at the tail end.   A composition models the notion of one object "owning" another and thus being responsible for the creation and destruction of another object.</item>
+									<item><emphasis>Aggregation</emphasis>: Represented by an association line with a hollow diamond at the tail end.  An aggregation models the notion that one object uses another object without "owning" it and thus is <emphasis>not </emphasis>responsible for its creation or destruction.</item>
+								</list></item>
+							<item><emphasis>Dependency </emphasis>-- a dotted line with an open arrowhead that shows one entity depends on the behavior of another entity.  Typical usages are to represent that one class instantiates another or that it uses the other as an input parameter.</item>
+						</list></item>
+					<item><emphasis>Notes </emphasis>that are used to provide further details or explanations of particular parts of the diagram.   Notes are boxes with a little "dog-ear" on one corner.</item>
+				</list></para>
+			<para id="p40">Here is an example of a UML class diagram that holds most of the more common features:
+			<figure id="f10">
+					<title>UML Class Diagram</title>
+					<media id="idm1022288" alt=""><image src="../../media/listvisitors.png" mime-type="image/png"/></media>
+					<caption>The above diagram contains classes, interfaces, inheritance and implementation lines, aggregation lines, dependency lines and notes.</caption>
+				</figure></para>
+		</section>
+	</content>
+	<glossary>
+		<definition id="def1">
+			<term>UML</term>
+			<meaning id="idp1404064">Unified Modeling Language, developed by the Object Management Group ("OMG")</meaning>
+			<seealso>
+				<term url="http://www.omg.org">Object Management Group ("OMG")</term>
+			</seealso>
+		</definition>
+	</glossary>
+</document>

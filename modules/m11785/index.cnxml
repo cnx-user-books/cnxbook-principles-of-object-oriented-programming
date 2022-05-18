@@ -1,0 +1,149 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:md="http://cnx.rice.edu/mdml">
+	<title>Abstraction</title>
+	<metadata><md:content-id>undefined</md:content-id><md:title/><md:uuid>dc5f4304-cf96-4e7f-ada3-843e8d1d1e3f</md:uuid>
+</metadata>
+	<content>
+		<section id="s10">
+			<title>Introduction</title>
+			<para id="s10p10">Abstraction is the process of hiding the details and  exposing only the essential features of a particular concept or object.  Computer scientists use abstraction  to understand and solve problems and communicate their solutions with the computer in some particular computer language.  We illustrate this process by way of trying to solve the following problem using a computer language called Java.</para>
+			<para id="s10p20"><emphasis>Problem</emphasis>: Given a rectangle 4.5 ft wide and 7.2 ft high, compute its area.</para>
+			<para id="s10p30">We know the area of a rectangle is its width times its height.  So all we have to do to solve the  above problem is  to  multiply 4.5 by 7.2 and get the the answer.  The question is how to express the above solution in Java, so that the computer can perform the computation.<!-- Insert module text here --></para>
+		</section>
+		<section id="s20">
+			<title>Data Abstraction</title>
+			<para id="s20p10">The product of 4.5 by 7.2 is expressed in Java as: <code>4.5 * 7.2</code>.  In this expression, the symbol <code>*</code> represents the multiplication operation.  4.5 and 7.2 are called number <emphasis>literals</emphasis>.  Using DrJava, we can type in the expresssion <code>4.5 * 7.2</code> directly in the interactions window and see the answer.</para>
+			<para id="s20p20">Now suppose we change the problem to compute the area of a rectangle of width 3.6 and height 9.3.  Has the original  problem really change at all? To put it in another way, has the <emphasis>essence </emphasis>of the original problem changed?  After all, the formula for computing the answer is still the same.  All we have to do is to enter 3.6 * 9.3.  What is it that has <emphasis>not </emphasis>change (the <emphasis><term>invariant</term></emphasis>)?  And what is it that has changed (the <emphasis><term>variant</term></emphasis>)?</para>
+			<section id="s20s10">
+				<title>Type  Abstraction</title>
+				<para id="s20s10p30">The problem has not changed in that it still deals with the same geometric shape, a rectangle, described in terms of the same dimensions, its width and height.  What vary are simply the values of the width and the height.  The formula to compute the area of a rectangle given its width and height does not change: <code display="block" id="idm4907888">width * height</code>It does not care what the actual specific values of width and height are. What  it cares about is that the values of width and height must be such that the multiplication operation makes sense.  How do we express the above invariants in Java?</para>
+				<para id="s20s10p40">We just want to think of the width and height of a given rectangle as elements of the set of real numbers. In computing, we group values with common characteristics into a set and called it a <term><emphasis>type</emphasis></term>.  In Java, the type <emphasis><term>double </term></emphasis>is the set of real numbers that are implemented inside the computer in some specific way.  The details of this internal representation is immaterial for our purpose and thus can be ignored.  In addition to the type double, Java provides many more pre-built types such as <emphasis><term>int </term></emphasis>to represent the set of integers and <emphasis><term>char </term></emphasis>to represent the set of characters.  We will examine and use them as their need arises in future examples.  As to our problem, we only need to restrict ourselves to the type double.</para>
+				<para id="s20s10p50">We can define the width and the height of a rectangle as double in Java as follows. 
+<code display="block" id="idp13169936">
+double width;
+double height;
+</code></para>
+				<para id="s20s10p80">The above two statements are called <emphasis>variable </emphasis>definitions where width and height are said to be variable names.  In Java, a variable represents a memory location inside the computer.  We define a variable by first declare its type, then follow the type by the name of the variable, and terminate the definition with a semi-colon.  This a Java syntax rule.  Violating a syntax rule constitutes an error.  When we define a variable in this manner, its associated memory content is initialized to a default value specified by the Java language.  For variables of type double, the default value is 0.<note type="Finger Exercise" id="s20s20p80n10"><label>Finger Exercise</label>Use the interactions paneof DrJava to evaluate width and height and verify that their values are set to 0.</note></para>
+				<para id="s20s10p90">Once we have defined the width and height variables, we can solve our problem by writing the expression that computes the area of the associated rectangle in terms of width and height as follows.  <code display="block" id="idp6345872">width * height</code></para>
+				<para id="s20s10p110">Observe that the two variable definitions together with the expression to compute the area presented in the above directly translate the description of the problem -two real numbers representing the width and the height of a rectangle- and the high-level thinking of what the solution of the problem should be -area is the width times the height.  We have just expressed the invariants of the problem and its solution.  Now, how do we vary width and height in Java?  We use what is called the <emphasis>assignment </emphasis>operation.  To assign the value 4.5 to the variable width and the value 7.2 to the variable height, we write the following Java assignment statements. <code display="block" id="idm1400528">
+width = 4.5;
+height = 7.2;</code></para>
+				<para id="s20s10p140">The syntax rule for the assignment statement in Java is: first write the name of the variable, then follow it by the equal sign, then follow the equal sign by a Java expression, and terminate it with a semi-colon.  The semantic (i.e. meaning) of such an assignment is: evaluate the expression on the right hand side of the equal sign and assign the resulting value into the memory location represented by the variable name on the left hand side of the equal side.  It is an error if the type of the expression on the right hand side is not <emphasis>a subset</emphasis> of the type of the variable on the left hand side. </para>
+				<para id="s20s10p150">Now if we evaluate <code display="inline">width * height</code> again (using the Interactions Window of DrJava), we should get the desired answer.  Life is good so far, though there is a little bit of inconvenience here: we have to type the expression width * height each time we are asked to compute the area of a rectangle with a given width and a given height.  This may be OK for such a simple formula, but what if the formula is something much more complex, like computing the length of the diagonal of a rectangle?  Re-typing the formula each time is quite an error-prone process.  Is there a way to have the computer memorize the formula and perform the computation behind the scene so that we do not have to memorize it and rewrite it ourselves?  The answer is yes, and it takes a little bit more work to achieve this goal in Java.</para>
+				<para id="s20s10p160">What we would like to do is to build the equivalent of a black box that takes in as inputs two real numbers (recall type <emphasis>double</emphasis>) with a button.  When we put in two numbers and depress the button, "magically" the black box will compute the product of the two input numbers and spit out the result, which we will interpret as the area of a rectangle whose width and height are given by the two input numbers.  This black box is in essence a specialized calculator that can only compute one thing: the  area of a rectangle given a width and a height. To build this box in Java, we use a construct called a class, which looks like the following.  <code display="block" id="idp8008448">
+class AreaCalc { 
+    double rectangle(double width, double height) {
+        return width * height;
+    }
+}
+</code>
+What this Java code means is something like: <code display="inline">AreaCalc </code>is a <emphasis>blue print</emphasis> of a specialized computing machine that is capable of accepting two input <code display="inline">doubles </code>, one labeled width and the other labeled height, computing their product and returning the result.  This computation is given a name: <code display="inline">rectangle</code>.   In Java parlance, it is called a <emphasis><term>method </term></emphasis>for the class <code display="inline">AreaCalc</code>.  </para><para id="s20s10p170">Here is an example of how we use <code display="inline">AreaCalc</code> to compute area of a rectanglee of width 4.5 and height 7.2.  In the Interactions pane of DrJava, enter the following lines of code.
+<code display="block" id="idp9912320">
+AreaCalc calc = new AreaCalc();
+calc.rectangle(4.5, 7.2) 
+</code>
+The first line of code  defines <code display="inline">calc </code>as a variable of type <code display="inline">AreaCalc </code>and assign to it an <emphasis>instance </emphasis>of the class <code display="inline">AreaCalc</code>.  <term><emphasis>new </emphasis></term>is a keyword in Java.  It is an example of what is called a class operator.  It  operates on a class and creates an instance (also called <emphasis>object</emphasis>) of the given class.  The second line of code  is a call to the object <code display="inline">calc </code>to perform the <code display="inline">rectangle </code>task where <code display="inline">width </code>is assigned the value 4.5 and <code display="inline">height </code>is assigned the value 7.2.  To get the area of a 5.6 by 8.4 rectangle, we simply use the same calculator <code display="inline">calc </code>again: <code display="block" id="idp10683328">calc.rectangle(5.6, 8.4);</code> So instead of solving just one proble -given a rectangle 4.5 ft wide and 7.2 ft high, compute its area- we havebuilt a "machine" that can compute the area of <emphasis>any </emphasis>given rectangle.  But what about computing the area of a right triangle with height 5 and base 4?  We cannot  simply use this calculator.  We need another specialized calculator, the kind that can compute the area of a circle.  </para>
+				<para id="s20s10p180">There are at least two different designs for such a calculator. <list list-type="bulleted" id="calcList10">
+		<item>create a new class called AreaCalc2 with one method called <emphasis>rightTriangle </emphasis>with two input parameters<emphasis>
+			</emphasis>of type <emphasis>double</emphasis>.  This corresponds to designing a different area calculator with one button labeled <emphasis>rightTriangle </emphasis>with two input slots. </item>
+		<item>add to AreaCalc a method called rightTriangle with two input parameters of type <emphasis>double</emphasis>.  This corresponds to designing an area calculator with two buttons: one labeled <emphasis>rectangle </emphasis>with two input slots and the other labeled <emphasis>rightTriangle</emphasis>, also with two input slots.</item>
+	</list>In either design, it is the responsibility of the calculator user to pick the appropriate calculator or press the appropriate button on the calculator to correctly obtain the area of the given geometric shape.  Since the two computations require exactly the same number of input parameters of exactly the same type, the calculator user must be careful not get mixed up.  This may not be too much of an inconvenience if there are only two kinds of shape to choose from: rectangle and right triangle.  But what if the user has to choose from hundreds of different shapes?  or better yet an <emphasis>open-ende</emphasis> number of shapes?  How can we, as programmers, buid a calculator that can handle an <emphasis>infinite </emphasis>number of shapes?  The answer lies in <emphasis>abstraction</emphasis>.  To motivate how conceptualize the problem, let us digress and contemplate the behavior of a child!</para>
+			</section>
+			<section id="s30">
+				<title>Modeling a Person</title>
+				<para id="s30p10">For the first few years of his life, Peter did not have a clue what birthdays were, let alone his own birth date.   He was incapable of responding to your inquiry on his birthday.  It was his parents who planned for his elaborate birthday parties months in advance.  We can think of Peter then as a rather "dumb" person with very little intelligence and capability.  Now Peter is a college student.  There is a piece of memory in his brain that stores his birth date: it's September 12, 1985!  Peter is now a rather smart person.  He can figure out how many more months till his next birthday and e-mail his wish list two months before his birth day.  How do we model a "smart" person like Peter?  Modeling such a person entails modeling <list list-type="bulleted" id="personBDList20">
+						<item>a birth date and</item>
+						<item>the computation of the number of months till the next birth day given the current month.</item>
+					</list>A birth date consists of a month, a day and a year.  Each of these data can be represented by an integer, which in Java is called a number of type <emphasis><term>int</term></emphasis>.  As in the computation of the area of a rectangle, the computation of the number of months till the next birth day given the current month can be represented as a method of some class.  What we will do in this case that is different from the area calculator is we will lump both the data  (i.e. the birth date) and the computation involving the birth date into one class.  The grouping of data and computations on the data into one class is called encapsulation.  Below is the Java code modeling an intelligent person who knows how to calculate the number of months before his/her next birth day.   The line numbers shown are there for easy referencing and are not part of the code.
+<code display="block" id="idm899552">
+1  public class Person {
+2     /**
+3     * All data fields are private in order to prevent code outside of this 
+4     * class to access them.
+5     */
+6     private int _bDay;   // birth day
+7     private int _bMonth; // birth month; for example, 3 means March.
+8     private int _bYear;  // birth year
+    
+9      /**
+10    * Constructor: a special code used to initialize the fields of the class.
+11    * The only way to instantiate a Person object is to call new on the constructor.
+12    * For example: new Person(28, 2, 1945) will create a Person object with 
+13    * birth date February 28, 1945.
+14    */
+15    public Person(int day, int month, int year) {
+16       _bDay = day;
+17       _bMonth = month;
+18       _bYear = year;
+19    }
+    
+20    /**
+21    * Uses "modulo" arithmetic to compute the number of months till the next 
+22    * birth day given the current month.
+23    * @param currentMonth an int representing the current month.
+24    */
+25    public int nMonthTillBD(int currentMonth) {
+26        return (_bMonth - currentMonth + 12) % 12;
+27    }
+28 }
+</code>(<link resource="Person.java">Download the above code</link>)  We now explain what the above Java code means.<list list-type="bulleted" id="personCodeExplain">
+						<item>line 1 defines a class called Person.  The opening curly brace at the end of the line and the matching closing brace on line 28 delimit the contents of class Person.  The key word <emphasis><term>public </term></emphasis>is called an <emphasis><term>access specifier</term></emphasis> and means all Java code in the system can reference this class.</item>
+						<item>lines 2-5 are comments.  Everything between /* and */ are ingored by the compiler.</item>
+						<item>lines 6-8 define three integer variables.  These variables are called <emphasis><term>fields </term></emphasis>of the class.   The key word private  is another access specifier that prevents access by code outside of the class.   Only code inside of the class can access them.  Each field is followed by a comment delimited by // and the end-of-line.  So there two ways to comment code in Java: start with /* and end with */ or start with // and end with the end-of-line.</item>
+						<item>lines 9-14 are comments.</item>
+						<item>lines 15-19 constitute what is called a <emphasis><term>constructor</term></emphasis>.  It is used to initialize the fields of the class to some particular values.  The name of the    constructor should spell exactly like the class name.  Here it is <emphasis>public</emphasis>, menaing it can be called by code outside of the class Person via the   operator new.  For example, <code display="inline">new Person(28, 2, 1945)</code> will create an instance of a Person with _bDay = 28, _bMonth = 2 an d_bYear = 1945.    </item>
+						<item>lines 20-24are comments.  </item>
+						<item>line 23 is a special format for documenting the parameters of a metod.  This format is called the javadoc format.  We will learn more about    javadoc in another module. </item>
+						<item>lines 25-27 constitute the definition of a method in class Person.  </item>
+						<item>line 26 is the formula for computing the number of months before the next birthday using the remainder operator %. x % y gives the    remainder of the integer division between the dividend x and the divisor y.  </item>
+					</list></para>
+			</section>
+		</section>
+	</content>
+	<glossary>
+		<definition id="g40">
+			<term>assignment</term>
+			<meaning id="idp5531360">To set a variable to a particular data value.</meaning>
+			<seealso>
+				<term>variable</term>
+			</seealso>
+		</definition>
+		<definition id="g60">
+			<term>invariant</term>
+			<meaning id="idp10385696">The parts of a probram, such as values or programmatic behaviors, that do not vary from one invocation to the next.  Note that while a value may be variant, an abstraction of that value may be invariant.</meaning>
+			<seealso>
+				<term>variant</term>
+			</seealso>
+		</definition>
+		<definition id="g30">
+			<term>literal</term>
+			<meaning id="idp7365408">An explicit, concrete textual reprepresentation of a value of a given type.   Literals are often used to set the values for variables.</meaning>
+			<seealso>
+				<term>variable</term>
+			</seealso>
+		</definition>
+		<definition id="g10">
+			<term>type</term>
+			<meaning id="idp10016656">A set of values with certain common characteristics.   In Java, all data values must be of some type.</meaning>
+			<example id="idp8897552">
+				<para id="g10p10"><code>int </code>is a type that is used to represent integer number values.   <code>double </code>is a type that is used to represent real number values.  <code>String </code>is a type that is used to represent a string of characters.</para>
+			</example>
+			<seealso>
+				<term>variable</term>
+			</seealso>
+		</definition>
+		<definition id="g20">
+			<term>variable</term>
+			<meaning id="idp196624">A memory location to hold a particular value of a given type.   In a strongly-typed language such as Java, all variables must have a type.   This is not true in all languages however.  In a Java program, variables have names called indentifiers, which are sequences of characters put together according to  the following rule.  A must begin with an alphabet character (e.g. 'a', 'b', 'X', 'Y', etc.) and may be followed by zero or more alphabet characters and/or digit characters (e.g. '0', '1', etc.) and/or the underscore character ('_').  For examples, cp3PO is a valid variable name while Darth Vader is not because it has a blank character between the 'h' and the 'V'.</meaning>
+			<seealso>
+				<term>type</term>
+			</seealso>
+		</definition>
+		<definition id="g50">
+			<term>variant</term>
+			<meaning id="idm1022464">The parts of a program, such as values or programmatic behaviors, that vary from one invocation to the next.  Note that while a value may be variant, its abstraction may be invariant.</meaning>
+			<seealso>
+				<term>invariant</term>
+			</seealso>
+		</definition>
+	</glossary>
+</document>

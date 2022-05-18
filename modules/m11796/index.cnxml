@@ -1,0 +1,247 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:md="http://cnx.rice.edu/mdml">
+	<title>Union Design Pattern: Inheritance and Polymorphism</title>
+	<metadata><md:content-id>undefined</md:content-id><md:title/><md:uuid>6021a613-7c7d-45c4-a5e1-eac89c4bc75b</md:uuid>
+</metadata>
+	<content>
+		<para id="p10">Inheritance and polymorphism (discussed below) are two sides of the same coin and represent very foundational concepts in object-oriented programming.   The union design pattern is an expression of these relationships and enables us to talk about them in a more tangible manner.  <!-- Insert module text here --></para>
+		<section id="s10">
+			<title>Union Design Pattern</title>
+			<para id="s10p10">Consider the following "is-a" or inheritance relationships between "concrete" entities Coca Cola, sulfuric acid, milk and the "abstract" liquid (named "<code><emphasis>ALiquid</emphasis></code>" by convention since it is an abstract entity): <figure id="idm9972016">
+					<title>Union of Liquids</title>
+					<media id="idm10796144" alt=""><image src="../../media/liquids.png" mime-type="image/png"/></media>
+					<caption><code><emphasis>ALiquid </emphasis></code>is the union of <code>CocaCola</code>, <code>SulfuricAcid </code>and <code>Milk</code></caption>
+				</figure>The UML diagram shows us that Coca Cola, sulfuric acid and milk are all liquids.   Conversely, the diagram tells us that a liquid could be either Coca Cola, sulfuric acid or milk.   Note of course, that liquids are not constrained to these 3 entities but that doesn't affect the discussion here--in fact, this will be an important feature later on.</para>
+			<para id="s10p20">Another way that we can express the notions depicted by the diagram is to say that the abstract <code><emphasis>ALiquid </emphasis></code>superclass represents the union of Coca Cola, sulfuric acid and milk.   That is, <quote display="block" id="idm14809536">a superclass represents the union of all<emphasis> </emphasis>of its subclasses.</quote>or in other words <quote display="block" id="idm10295024">a superclass represents all that is abstractly equivalent about its subclasses.</quote>For instance, the notion of an abstract liquid embodies all the behaviors and attributes such as having no definite shape, randomized atomic positions, freezing and boiling points that are common to Coca Cola, sulphuric acid and milk.   Note the fine distinction between having a value and having the same value.<note type="Using interfaces" id="s10p2010"><label>Using interfaces</label>In general, an interface can be substituted for the abstract superclass discussed here with no loss of generality.  </note></para>
+			<para id="s10p25">The above diagram illustrating the relationship betwen a superclass and its subclasses is called the <term>Union Design Pattern</term>.    The union pattern shows us <term>inheritance </term>in how the Coca Cola, sulfuric acid and milk will all inherit the abstract behaviors of liquids, such as the lack of a definite shape and freezing/boiling points.  Conversely, it also shows that if a situation utilizes a liquid, either Coca Cola, milk or sulphuric acid can be used as they are all abstractly equivalent as liquids.  Note that this does not imply that all three will act identically!  For instance, the human throat can swallow any liquid because it is made to work with fluids that can flow.   However, the reaction of the throat to sulphuric acid is markedly different than it reaction to milk!   This ability to substitute any subclass for its superclass and get different behavior is called <term>polymorphism</term>.</para>
+<section id="s100">
+<title>Abstraction vs. Commonality</title>
+<para id="s100p1">A subtle but extremely important point is that 
+<quote display="block" id="idm2978704">Commonality does not imply abstract equivalence.</quote>
+   Just because a feature is common to every item in a set, does not necessarily mean that it represents some sort of abstract feature of those elements.  For instance, cats, dogs, humans, and rats are all mammals where a mammal is defined as an animal that produces milk to feed its young.    One could thus make a class model where a superclass <code>Mammal </code>has subclasses <code>Cat</code>, <code>Dog</code>, <code>Human </code>and <code>Rat</code>.   One common feature is behavior is that cats, dogs, humans and rats all give live birth of their young.  So it is tempting to say that the <code>Mammal </code>class should also embody the "live birth" behavior.    However, as one wanders the world discovering new mammals, in the backwaters of Australia one finds the <link url="http://www.creationscience.com/onlinebook/LifeSciences13.html">duck-billed platypus</link> which produces milk and is therefore clearly a mammal.   However, the duck-billed platypus also lays eggs.  Thus the "live birth" behavior does not belong in the <code>Mammal </code>superclass as it was only a coincidence that it was common to our initial set of subclasses.   More importantly, being able to give live birth was never part of the abstract definition of a mammal and thus should never have been included in the <code>Mammal </code>superclass in the first place.</para><para id="element-540">Cats, monkeys and whales, while diverse creatures, are all mammals. Hence to model such a system in the computer, it makes sense to make <code>Cat</code>, <code>Monkey</code> and <code>Whale</code> all subclasses of an abstract <code>Mammal</code> superclass. Each species has many behaviors (methods) but I will only concentrate on 3 in particular:
+
+</para><list id="element-455" list-type="enumerated"><item><code>boolean givesMilk()</code> : returns true if the animal can give milk to feed its young, false otherwise </item>
+	<item><code>String makeSound()</code> : returns a String represenation of a common sound the animal makes. </item>
+	<item><code>boolean givesLiveBirth()</code>: returns true if the animal bears live young. </item></list><para id="element-694">In the table below are the methods and what happens when each species executes that method:</para>
+
+<table id="element-937" summary="">
+<tgroup cols="4"><colspec colnum="2" colname="c2"/>
+	    <colspec colnum="4" colname="c4"/>
+
+	<thead valign="top">
+		<row>
+			<entry morerows="1" align="center">Mammal</entry>
+			<entry namest="c2" nameend="c4" align="center">Method</entry>
+		</row>
+		<row>
+			<entry align="center"> <code>boolean givesMilk()</code> </entry>
+			<entry align="center">
+				<code>String makeSound()</code>
+			</entry>
+			<entry align="center">
+				<code>boolean givesLiveBirth()</code>
+			</entry>
+		</row>
+	</thead>
+	<tbody>
+		<row>
+			<entry>Cat</entry>
+			<entry>true</entry>
+			<entry>"Meow"</entry>
+			<entry>true</entry>
+		</row>
+		<row>
+			<entry>Monkey</entry>
+			<entry>true</entry>
+			<entry>"Screech"</entry>
+			<entry>true</entry>
+		</row>
+		<row>
+			<entry>Whale</entry>
+			<entry>true</entry>
+			<entry>"[whale song]"</entry>
+			<entry>true</entry>
+		</row>
+	</tbody>
+
+</tgroup>
+</table><para id="element-501">We could start out with the following class implemenation (<link resource="Mammal0.java">Mammal0.java</link>):</para><figure id="element-373"><title>Model of Mammals</title>
+	<media id="idm2213728" alt=""><image src="../../media/mammal0.png" mime-type="image/png"/></media>
+	<caption>No common methods defined in the superclass.</caption>
+</figure>
+<note type="UML Syntax: italics" id="idp4566992"><label>UML Syntax: italics</label>Italics signify abstract methods or classes</note><note type="UML Syntax: methods" id="idm10835728"><label>UML Syntax: methods</label><code>return_value : method_name(parameter_type_#1 parameter_name_#1, parameter_type_#2 parameter_name_#2, etc)</code></note><para id="element-474">Let's start our analysis:</para><list id="element-292" list-type="bulleted"><item>A mammal is defined by the fact that it gives milk to feed its young. It is thus not surprising that all the <code>givesMilk()</code> methods in the subclasses return true. The <code>givesMilk()</code> method is a prime candidate for "hoisting" up into the <code>Mammal</code> superclass ("hoisting" =  moving the method upwards from the subclass to the superclass). </item>
+	<item><code>makeSound()</code> returns a different value for each species, but intrisically, we expect any animal, which includes mammals, to be able to make some sort of sound. Thus <code>Mammals</code> should have a <code>makeSound()</code> method, but since, at the <code>Mammals</code> level, we don't know exactly how that sound will be made, the method at that level must be abstract. The <code>makeSound()</code> method at the concrete <code>Cat</code>, <code>Monkey</code> and <code>Whale</code> level however, would be concrete because each animal makes its own unique sound. 
+</item>
+	<item><code>givesLiveBirth()</code> returns exactly the same value for all of our rather diverse selection of animals here. It seems like a fine candidate for hoisting. Or is it....? Let's go ahead an hoist it anyway. </item></list><para id="element-547">This is what we have so far (<link resource="Mammal0.java">Mammal1.java</link>):</para><figure id="element-908"><title>Model of Mammals</title>
+	<media id="idm2796336" alt=""><image src="../../media/mammal1.png" mime-type="image/png"/></media>
+	<caption>Abstract  and common methods hoisted to the superclass.</caption>
+</figure><para id="element-387">Before we go charging ahead, let's stop for a moment and review what we've done: Cats, monkeys, and whales do represent a wide spectrum of mammals, but remember, the abstract <code>Mammal</code> class is a representation of <emphasis>ALL</emphasis> mammals, not just the ones we have so far. The correlation of like behavior with all our represented animals does not imply its inclusion in their abstract representation!
+
+</para><para id="element-331">For instance, one day, in our wanderings through Australia, we encounter a <link url="http://en.wikipedia.org/wiki/Duckbilled_platypus">Duckbilled Platypus</link>. Let's see how it behaves with respect to our 3 methods:</para><table id="element-752" summary="">
+<tgroup cols="4"><colspec colnum="2" colname="c2"/><colspec colnum="4" colname="c4"/>
+	<thead valign="top">
+		<row>
+			<entry morerows="1" align="center">Mammal</entry>
+			<entry namest="c2" nameend="c4" align="center">Method</entry>
+		</row>
+		<row>
+			<entry align="center">
+				<code>boolean givesMilk()</code>
+			</entry>
+			<entry align="center">
+				<code>String makeSound()</code>
+			</entry>
+			<entry align="center">
+				<code>boolean givesLiveBirth()</code>
+			</entry>
+		</row>
+	</thead>
+	<tbody>
+		<row>
+			<entry>Duckbilled Platypus</entry>
+			<entry>true</entry>
+			<entry>"growl"</entry>
+			<entry>false</entry>
+		</row>
+	</tbody>
+</tgroup>
+</table><para id="element-365"><emphasis>Duckbilled platypus lay eggs!!</emphasis></para><para id="element-222">Giving live birth is not part of the definition of a mammal. On the other hand, the question of whether or not the animal gives live birth can always be asked of any animal, including all mammals. The result may be true or false however, so the method must be abstract at the <code>Mammal</code> level.
+
+</para><para id="element-769">Our class structure should look like this (<link resource="Mammal0.java">Mammal2.java</link>):</para><figure id="element-676"><title>Model of Mammals</title>
+	<media id="idm1259664" alt=""><image src="../../media/mammal2.png" mime-type="image/png"/></media>
+	<caption>Properly abstracted model.</caption>
+</figure><para id="element-170"><quote display="block" id="idp9370784"><emphasis> Hoisting does not guarantee proper abstraction. Hoisting should be driven by a need for abstraction, not by coincidence.</emphasis></quote></para>
+</section>
+			<para id="s10p30">Another key notion that the union pattern emphasizes is <term>levels of abstraction</term>.   What we see is that the concept of a liquid is more abstract than milk.  In turn, the general concept of milk is more abstract than "2% milk" or "skim milk" which would be subclasses of milk.  In general we can see that a superclass is a distinctly higher level of abstraction than any of its subclasses.   One of the key tools we use to help us design and build high quality object-oriented systems is careful attention to the abstraction level at any given moment.  <quote display="block" id="idm10094384">Good OOP code always maintains a consistent level of abstraction.</quote>Abstraction levels are links in a chain.   A chain is only as strong as its weakest link.   A program is only as abstract as its lowest abstraction level.</para>
+			<para id="s10p40">Levels of abstraction illustrate another important aspect of an OO program.  Since a superclass represents the union of the subclasses or conversely, that the superclass can be represented by any of its subclasses, we see that the superclass is an embodiment of all the <emphasis>invariant </emphasis>aspects of the subclasses.   That is, the superclass's definition is all that is abstractly equivalent about the subclasses--all that does not change from subclass to subclass.  Note that this does <emphasis>not </emphasis>imply that the values of common fields are necesarily the same, just that, perhaps, that the field exists.  Not does it imply that what is common to all the subclasses is necessarily what is abstractly equivalent about them (see the note above).   The differences between the subclasses is what creates the variations in how the program behaves when any given subclass is used in place of the superclass.  We call this the <emphasis>variant </emphasis>aspects of the system.  <quote display="block" id="idm3848800">The total behavior of a program is the combination of its variant and invariant behaviors.</quote></para>
+		</section>
+		<section id="s20">
+			<title>Inheritance and Polymorphism</title>
+			<para id="s20p10"><quote display="block" id="idm73648">Inheritance and polymorphism are really just two ways of looking at the same class relationship.  </quote></para>
+			<para id="s20p20">Inheritance is looking at the class hierarchy from the bottom up.   A subclass inherits behaviors and attributes from its superclass.  A subclass automatically possesses certain behaviors and/or attributes simply because it is classified as being a subclass of an entity that possesses those behaviors and/or attributes.   That is, a cherry can be said to automatically contain a seed because it is a subclass of Fruit and all fruit contain seeds.     </para>
+			<para id="s20p30">Inheritance is useful from a <emphasis>code reuse</emphasis> perspective.   Any (non-private) code in the superclass does not have to be replicated in any of the subclasses because they will automatically inherit those behaviors and attributes.   However, one must be very careful when transferring common code from the subclasses to the superclass (a process called "<emphasis>hoisting</emphasis>"), as the proper abstraction represented by the superclass may be broken (see note above).</para>
+			<para id="s20p40">Polymorphism, on the other hand, is looking at the class hierarchy from the top down.  Any subclass can be used anywhere the superclass is needed because the subclasses are all abstractly equivalent to the superclass.   Different behaviors may arise because the subclasses may all have different implementations of the abstract behaviors defined in the superclass.   For instance, all liquids have a boiling temperature.   They may have different values for that boiling temperature which leads to different behaviors at any given temperature.</para>
+			<para id="s20p50">Polymorphism is arguably the more useful perspective in an object-oriented programming paradigm.  Polymorphism describes how an entity of a lower abstraction level can be substituted for an entity of a higher abstraction level and in the process, change the overall behavior of the original system.   This will be the cornerstone that enables us to build OO systems that are flexible, extensible, robust and correct.</para>
+		</section>
+		<section id="s30">
+			<title>Exploring Polymorphism</title>
+			<para id="s30p10">Let's explore some different ways in which polymorphism presents itself.  Consider the following example of the union design pattern: <code display="block" id="idm1316656">
+	/**
+	* An interface that represents an operation on two doubles
+	*/
+	public interface IBinaryOp {
+		double apply( double x, double y);  // all interface methods are public and abstract by default
+	}
+	
+	/**
+	* An IBinaryOp that adds two numbers
+	*/
+	public class AddOp implements IBinaryOp {
+		public double apply( double x, double y) {
+			return x+y;
+		}
+	}	
+	
+	/**
+	* An IBinaryOp that multiplies two numbers
+	*/
+	public class MultOp implements IBinaryOp {
+		public double apply( double x, double y) {
+			return x*y;
+		}
+		
+		public String getDescription() {
+			return "MultOp is a multiplying function.";
+		} 
+	}	
+	</code></para>
+			<exercise id="s30e10">
+				<problem id="idp719664">
+					<para id="s30e10p10">Is the following legal code?   <code>IBinaryOp bop = new IBinaryOp()</code>; </para>
+				</problem>
+				<solution id="idm3938688">
+					<para id="s30e10p20">No, it won't compile.  <code>IBinaryOp </code>is an interface and does not specify any actual executable code, so it cannot be instantiated.</para>
+				</solution>
+			</exercise>
+			<exercise id="s30e20">
+				<problem id="idp2858512">
+					<para id="s30e20p10">Is the following legal code?   <code>IBinaryOp bop = new AddOp()</code>; </para>
+				</problem>
+				<solution id="idm1224800">
+					<para id="s30e20p20">Yes!  <code>AddOp </code>is an concrete class and can be instantiated.  <code>AddOp </code>is an  <code>IBinaryOp</code> (technically, <code>AddOp </code><emphasis>implements </emphasis>the <code>IBinaryOp</code>interface), so <code>bop </code>can reference it.</para>
+				</solution>
+			</exercise>
+			<exercise id="s30e30">
+				<problem id="idp3093600">
+					<para id="s30e30p10">Given the above declaration and assignment of <code>bop</code>, is the following assignment then possible?   <code>bop = new MultOp()</code>; </para>
+				</problem>
+				<solution id="idp3287040">
+					<para id="s30e30p20">Yes, for the same reasons as the previous exercise!  <code>MultOp </code>is an concrete class and can be instantiated.  <code>MultOp </code>is an  <code>IBinaryOp</code>, so <code>bop </code>can reference it.</para>
+				</solution>
+			</exercise>
+			<exercise id="s30e40">
+				<problem id="idm10069488">
+					<para id="s30e40p10">Suppose we have<code> bop = new AddOp()</code>; , what is the result of <code>bop.apply(5,3) </code>?</para>
+				</problem>
+				<solution id="idm3766768">
+					<para id="s30e40p20">The result is 8 because <code>bop </code>refers to an <code>AddOp </code>instance, whose <code>apply </code>method adds its two input values.</para>
+				</solution>
+			</exercise>
+			<exercise id="s30e50">
+				<problem id="idm4235408">
+					<para id="s30e50p10">Suppose we now say<code> bop = new MultOp()</code>, what is the result of <code>bop.apply(5,3) </code> now?</para>
+				</problem>
+				<solution id="idp1499984">
+					<para id="s30e50p20">The result is 15 because <code>bop</code> now refers to an <code>MultOp</code> instance, whose <code>apply</code> method multiplies its two input values.</para>
+				</solution>
+			</exercise>
+			<exercise id="s30e60">
+				<problem id="idm10893088">
+					<para id="s30e60p10">Suppose we have some variable, called <code>myOp</code> of type <code>IBinaryOp</code> what is the result of <code>myOp.apply(5,3)</code>?</para>
+				</problem>
+				<solution id="idm369936">
+					<para id="s30e60p20">It is impossible to tell because it depends on the exact type of the object instance to which <code>myOp </code>refers.  </para>
+				</solution>
+			</exercise>
+			<exercise id="s30e70">
+				<problem id="idm1443744">
+					<para id="s30e70p10">Suppose we have<code> bop = new MultOp()</code>, is it legal to call <code>bop.getDescription() </code> ?</para>
+				</problem>
+				<solution id="idp475968">
+					<para id="s30e70p20">No, because <code>bop </code>is a variable of type <code>IBinaryOp </code>, which is not defined as having a <code>getDescription </code>method.  This is  true even if bop references an object of type MultOp.  This is because the <term>static typing</term> of <code>bop </code>tells the compiler that it references an <code>IBinaryOp</code>, not the particular concrete type of the object it currently references.   If we had <code>MultOp mop = new MultOp()</code>, then  <code>mop.getDescription() </code> is perfectly legal.</para>
+				</solution>
+			</exercise>
+			<exercise id="s30e80">
+				<problem id="idp1458112">
+					<para id="s30e80p10">Is the following legal code?<code> AddOp aop = new AddOp()</code></para>
+				</problem>
+				<solution id="idp1794208">
+					<para id="s30e80p20">Yes, because <code>aop</code> is a variable of type <code>AddOp</code>, and thus can reference an instance of the same type.</para>
+				</solution>
+			</exercise>
+			<exercise id="s30e90">
+				<problem id="idp5494576">
+					<para id="s30e90p10">Given the declaration in the previous exercise, is the following legal?<code> aop = new MultOp()</code></para>
+				</problem>
+				<solution id="idp3532944">
+					<para id="s30e90p20">No, because <code>aop </code>is a variable of type <code>AddOp </code>, and <code>MultIOp </code>is not an <code>AddOp</code>, so <code>aop </code>cannot reference an instance of <code>MultOp</code>. </para>
+				</solution>
+			</exercise>
+			<exercise id="s30e100">
+				<problem id="idm2480656">
+					<para id="s30e100p10">Suppose we have definitions of <code>aop </code>and <code>bop </code>from above.  Is the following legal? That is, can we compile and run the folowing statement without error? <code> bop = aop;</code></para>
+				</problem>
+				<solution id="idm1261136">
+					<para id="s30e100p20">Yes!  <code>bop </code>is a variable of type <code>IBinaryOp</code>, and <code>aop </code>is defined as referencing an <code>AddOp </code>object, which is an  <code>IBinaryOp </code>.</para>
+				</solution>
+			</exercise>
+			<exercise id="s30e110">
+				<problem id="idm598224">
+					<para id="s30e110p10">Is the converse legal as well? That is, using the above definitions, can we compile and run the following statement? <code> aop = bop; </code></para>
+				</problem>
+				<solution id="idm46608">
+					<para id="s30e110p20">Not as written, because <code>bop </code>is a variable of type <code>IBinaryOp </code> (i.e. staticly typed as such), which and does not necessarily reference an object of type <code>AddOp</code>. to which <code>aop </code>must reference.  That is, a variable of the type of the superclas can always reference an object of the type of any subclass, but a variable of the type of a particular subclass cannot necessarily reference something of the type of its superclass.   Another way of saying this is that a superset contains its subsets but not the other way around.    The above assignment will cause a compile time error because the compiler cannot know if the assignment is possible.  An explicit cast is required to supress the compile time error (<code>aop = (AddOp) bop</code>), but may trigger a run-time error if indeed the instance referred to by <code>bop</code> is not of type <code>AddOp</code>. </para>
+				</solution>
+			</exercise>
+		</section>
+	</content>
+</document>

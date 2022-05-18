@@ -1,0 +1,366 @@
+<document xmlns="http://cnx.rice.edu/cnxml">
+  <title>Binary Search Tree</title>
+<metadata xmlns:md="http://cnx.rice.edu/mdml">
+  <md:content-id>m32616</md:content-id>
+  <md:title>Binary Search Tree</md:title>
+  <md:abstract>The binary tree structure can be used as an efficient way to organize data objects that are totally ordered.  This is done by maintaining the tree in such a way that for any given subtree, the data elements in its left subtree are less than the root and the data elements in the right subtree are greater than the root.  Such a binary tree is called a binary search tree.</md:abstract>
+  <md:uuid>604b86b6-e563-44e8-953a-5c3da4314951</md:uuid>
+</metadata>
+<content>
+    <section id="id23358116">
+      <title>Binary Search Tree</title>
+      <section id="id24162798">
+        <title>1. Binary Search Tree Property (BSTP)</title>
+        <para id="id12233922">Consider the following binary tree of Integer objects.</para>
+        <code id="id5449499" display="block">-7
+|_ -55
+| |_ []
+| |_ -16
+|    |_ -20
+|    | |_ []
+|    | |_ []
+|    |_ -9
+|      |_ []
+|      |_ []
+|_ 0
+  |_ -4
+  | |_ []
+  | |_ []
+  |_ 23
+    |_ []
+    |_ []
+</code>
+        <para id="id22266140">Notice the following property: </para>
+        <list id="id23332982" list-type="bulleted">
+          <item>all elements in the left subtree are less than the root element, </item>
+          <item>and the root element is less than all elements in the right subtree. </item>
+        </list>
+        <para id="id12037418">Moreover, this property holds recursively for all subtrees.  It is called the <emphasis>binary search tree </emphasis>(BST) property.  </para>
+        <para id="id24200370">In general, instead of Integer objects, suppose we have a set of objects that can be compared for equality with "equal to" and "totally ordered" with an order relation called "less or equal to" .  Define "less than" to mean "less or equal to" AND "not equal to".  Let T be a BiTree structure that stores such totally ordered objects.  </para>
+        <section id="id24136257">
+          <title>Definition of Binary Search Tree Property</title>
+          <para id="id24180478">The <emphasis>binary search tree property</emphasis><emphasis effect="italics"/>(BSTP) is defined on the binary tree structure as follows.</para>
+          <list id="id12151131" list-type="bulleted">
+            <item>An empty binary tree satisfies the BSTP. </item>
+            <item>A non-empty binary tree T satisfies the BSTP if and only if  <list id="id11918316" list-type="bulleted"><item>the left and right subtrees of T both satisfy BSTP, and  </item><item>all elements in the left subtree of T are less than the root of T, and  </item><item>the root of T is less than all elements in the right subtree of T. </item></list></item>
+          </list>
+          <para id="id24133221">We can take advantage of this property when looking up for a particular ordered object in the tree.  Instead of scanning the whole tree for the search target, we can compare the search target against the root element and narrow the search to the left subtree or the right subtree if necessary.  So in the worst possible case, the number of comparisons is proportional to the height of the binary tree.  This is a big win if the tree is <term><emphasis effect="italics">balanced</emphasis></term>.  It can be proven that when a tree containing N elements is balanced, its height is at most a constant multiple of logN.  For example, the height of a balanced tree containing 10<sup>6</sup> elements is at most a fixed multiple of 6.  Here is the definition of what a <term><emphasis effect="italics">balanced tree </emphasis></term>is.</para>
+        </section>
+        <section id="id11696308">
+          <title>Definition of Balanced Tree</title>
+          <list id="id11827125" list-type="bulleted">
+            <item>An empty tree is <term><emphasis effect="italics">balanced</emphasis></term>. </item>
+            <item>A non-empty tree is <term><emphasis effect="italics">balanced</emphasis></term> if and only if <list id="id24183313" list-type="bulleted"><item> its subtrees are <term><emphasis effect="italics">balanced</emphasis></term> and </item><item>the heights of the subtrees differ by a fixed constant or by a fixed constant factor. </item></list></item>
+          </list>
+          <para id="id5845103">A binary tree with  the BST property is called a binary search tree.  It can serve as an efficient way for storage/retrieval of data.  We are lead to the following question: how to create and maintain a binary search tree?  </para>
+        </section>
+      </section>
+      <section id="id12155868">
+        <title>2. Binary Search Tree Insertion</title>
+        <para id="id24183126">Suppose we start with an empty binary tree T and  a  <term><emphasis effect="italics">Comparator</emphasis></term> that models a total ordering in a given set of objects S.  Then T clearly has the BST property with respect the <term><emphasis effect="italics">Comparator</emphasis></term> ordering of S.  The following algorithm (visitor on binary trees) will allow us to insert elements of S into T and at the same time maintain the BST property for T.  This algorithm also works for binary search tree containing Comparable objects.</para>
+        <code id="id19865400" display="block">package brs.visitor;
+    
+import brs.*;
+import java.util.*;
+    
+/**
+* Inserts an Object into the host maintaining the host's binary search 
+* tree property via a given Comparator.
+* Can also be used for Comparable objects.
+* Duplication is not allowed: replaces old data object with the new one.
+*/
+public class BSTInserter implements IVisitor {
+    private Comparator _order;
+    
+    /**
+    * Used when the items in the tree are Comparable objects.
+    */
+    public BSTInserter() {
+        _order = new Comparator() {
+            public int compare(Object x, Object y) {
+                return ((Comparable)x).compareTo(y);
+            }
+        };
+    }
+    </code>
+        <code id="id23771958" display="block">/**
+    * Used to order the items according to a given Comparator.
+    * @param order a total ordering on the items to be stored in the tree.
+    */
+    public BSTInserter (Comparator order) {
+        _order = order;
+    }
+    
+    /**
+    * Returns the host tree where the input is inserted as the root.
+    * @param host an empty binary tree, which obviously satisfies BSTP.
+    * @param input[0] new data to be inserted.
+    * @return host (which is no longer empty).
+    */
+    public Object emptyCase(BiTree host, Object... input) {
+        host.insertRoot (input[0]);
+        return host;
+    }
+    
+    /**
+    * If the input is equal to host.getRootDat) then the old root data 
+    * is replaced by input. Equality here is implicitly defined by the 
+    * total ordering represented by the Comparator _order.
+    * @param host non-empty and satisfies BSTP.
+    * @param input[0] new data to be inserted.
+    * @return the tree where input[0] is inserted as the root.
+    */
+    public Object nonEmptyCase(BiTree host, Object... input) {
+        Object root = host.getRootDat();
+        if (_order.compare(input[0], root) &lt; 0) {
+            return host.getLeftSubTree().execute(this, input[0]);
+        }
+        if (_order.compare(input[0], root) &gt; 0) {
+            return host.getRightSubTree().execute(this, input[0]);
+        }
+        host.setRootDat(input[0]);
+        return host;
+    }
+}
+    </code>
+      </section>
+      <section id="id12037104">
+        <title>3. Binary Search Tree Lookup</title>
+        <para id="id24201215">Suppose we have a binary search tree based on a given <emphasis effect="italics">Comparator</emphasis> ordering.  The following algorithm will allow us to lookup and retrieve a particular data object from the tree.  This algorithm also works for binary search tree containing Comparable objects.</para>
+        <code id="id24005192" display="block">package brs.visitor;
+import brs.*;
+import java.util.*;
+    
+/**
+* Finds a data object in a binary host tree that satisfies the
+* Binary Search Tree Property.
+* The algorithm is similar to that of insertion.
+*/
+    public class BSTFinder implements IVisitor {
+    private Comparator _order;
+    /**
+    * Used when the items in the tree are Comparable objects.
+    */
+    public BSTFinder() {
+        _order = new Comparator() {
+            public int compare(Object x, Object y) {
+                return ((Comparable)x).compareTo(y);
+            }
+        };
+    }
+    </code>
+        <code id="id12110232" display="block">/**
+    * Used when the items are ordered according to a given Comparator.
+    * @param order a total ordering on the items stored in the tree.
+    */
+    public BSTFinder(Comparator order) {
+        _order = order;
+    }
+    
+    /**
+    * Returns the empty host tree itself.
+    * @param host an empty binary (which obviously satisfies the
+    * Binary Search Tree Property).
+    * @param nu not used
+    * @return BiTree the empty host tree.
+    */
+    public Object emptyCase(BiTree host, Object... nu) {
+        return host;
+    }
+    
+    /**
+    * Returns the tree such that whose root, if it exists, is equal to input
+    * via the given Comparator _order.
+    * @param host non empty and satisfies BSTP.
+    * @param input[0] object to be looked up.
+    * @return BiTree
+    */
+    public Object nonEmptyCase(BiTree host, Object... input) {
+        Object root = host.getRootDat();
+        if (_order.compare(input[0], root) &lt; 0) {
+            return host.getLeftSubTree().execute(this, input[0]);
+        }
+        if (_order.compare(input[0], root) &gt; 0) {
+            return host.getRightSubTree().execute(this, input[0]);
+        }
+        return host;
+    }
+}
+    </code>
+      </section>
+      <section id="id23363675">
+        <title>4. Binary Search Tree Deletion</title>
+        <para id="id21280397">The algorithm to remove a particular data object from a binary search tree is more involved.  When the element to be removed is not at a leaf node, we can replace it with the largest element of the left subtree (if it's not empty) or the smallest element of the right subtree (if it's not empty).  In preparation, we write a visitor to find the subtree containing the largest element at the root. </para>
+        <code id="id12034458" display="block">package brs.visitor;
+import brs.*;
+import ordering.*;
+    
+/**
+* Returns the subtree of the host with the max value in the root if the tree
+* is not empty, otherwise returns the host itself, assuming the tree satisfies
+* the BST property.
+* @author DXN
+*/
+public class MaxTreeFinder implements IVisitor {
+    public static final MaxTreeFinder Singleton = new MaxTreeFinder ();
+    private MaxTreeFinder () {
+    }
+    
+    /**
+    * The host tree is empty: the tree containing the max is the host itself.
+    * @param host satisfies the binary search tree property.
+    * @param nu not used.
+    * @return BiTree the empty host itself.
+    */
+    public Object emptyCase(BiTree host, Object... nu) {
+        return host;
+    }
+    
+    /**
+    * Asks the right subtree of the host to find the max via an 
+    * anomymous helper, passing to it the host as a parameter.
+    * @param host satisfies the binary search tree property.
+    * @param nu not used.
+    * @return BiTree the subtree with maximum root.
+    */
+    public Object nonEmptyCase (BiTree host, Object... nu) {
+        return host.getRightSubTree().execute (new IVisitor () {
+            /**
+            * The BST parent of an empty right subtree contains the max 
+            * at the root.
+            * @param hp[0] a Bitree, the parent of h.
+            */
+            public Object emptyCase (BiTree h, Object... hp) {
+                return hp[0];
+            }
+    
+            /**
+            * Keep going to the right looking for the max.
+            * @param hp[0] a Bitree, the parent of h.
+            */
+            public Object nonEmptyCase (BiTree h, Object... hp) {
+                return h.getRightSubTree ().execute (this, h);
+            }
+        }, host);
+    }
+}
+    </code>
+        <para id="id21688361">We are now ready to write the deletion algorithm for a binary search tree ordered according to a given Comparator.  This algorithm also works for binary search tree containing Comparable objects.</para>
+        <code id="id23342618" display="block">package brs.visitor;
+import brs.*;
+import java.util.*;
+    
+/**
+* Deletes the given input from the host tree. Returns TRUE if the input is in
+* the host tree, otherwise return FALSE.
+Invariant: host contains unique objects and satisfies the BST property.
+Post: host does not contains the input.
+Algorithm:
+Case host is empty:
+    returns FALSE because there is nothing to remove.
+Case host is not empty:
+    if input &lt; root
+        return the result of asking the left subtree to delete the input;
+    else if root &lt; input
+        return the result of asking the right subtree to delete the input;
+    else if host's left subtree is empty (at this point, input == root)
+        ask host to remove its root (and become its right subtree)
+        returns TRUE
+    else {
+        ask host to replace the root with the maximum value of its left subtree;
+        the subtree that contains the maximum must have an empty right subtree;
+        thus it is safe to ask this subtree to remove its root;
+        return TRUE
+    }
+    
+    NOTE:
+    
+    As you have been indoctrinated, it is "uncouth" do ask something for what it
+    is. Instead of checking a subtree for emptiness, we should ask the subtree to
+    help carry out the deletion.
+*/
+public class BSTDeleter implements IVisitor {
+    private Comparator _order;
+    
+    /**
+    * Used when the items in the tree are Comparable objects.
+    */
+    public BSTDeleter() {
+        _order = new Comparator() {
+            public int compare(Object x, Object y) {
+                return ((Comparable)x).compareTo(y);
+            }
+        };
+    }
+    </code>
+        <code id="id12037985" display="block">/**
+    * Used when the items are ordered according to a given Comparator.
+    * @param order a total ordering on the items stored in the tree.
+    */
+    public BSTDeleter (Comparator order) {
+        _order = order;
+    }
+    
+    /**
+    * There is nothing to delete.
+    * @param host is empty and obviously satisfies the BST Property.
+    * @param nu not used
+    * @return Boolean.FALSE
+    */
+    public Object emptyCase(BiTree host, Object... nu) {
+        return Boolean.FALSE;
+    }
+    
+    /**
+    if input &lt; root
+        ask the host's left subtree to delete the input;
+    else if root &lt; input
+        ask the host's right subtree to delete the input
+    else (at this point, input == root)
+        ask the left subtree for help to remove the host's root using an
+        anonymous helper.
+    * @param host non-empty and satifies BST property
+    * @param input[0] object to be deleted from the host.
+    * @return Boolean.
+    */
+    public Object nonEmptyCase(final BiTree host, Object... input) {
+        Object root = host.getRootDat();
+        if (_order.compare(input[0], root) &lt; 0) {
+            return host.getLeftSubTree().execute (this, input[0]);
+        }
+        if (_order.compare(input[0], root) &gt; 0) {
+            return host.getRightSubTree().execute (this, input[0]);
+        }
+        // At this point: input is equal to root.
+        return host.getLeftSubTree().execute(new IVisitor() {
+            /**
+            * The outer host can safely remove its root and 
+            * becomes its right subtree.
+            * @param h the left subtree of the outer host.
+            */
+            public Object emptyCase (BiTree h, Object notUsed) {
+                host.remRoot();
+                return Boolean.TRUE;
+            }
+    
+            /**
+            * Finds the maximum value in the h paramter.
+            * Asks the outer host parameter to set its root to this 
+            * maximum value, and removes this maximum value from the 
+            * subtree containing this maximum value.
+            * @param h the left subtree of the outer host.
+            */
+            public Object nonEmptyCase (BiTree h, Object notUsed) {
+                BiTree maxTree = (BiTree)h.execute(MaxTreeFinder.Singleton);
+                host.setRootDat(maxTree.remRoot());
+                return Boolean.TRUE;
+            }
+        });
+    }
+}
+    </code>
+        <para id="id20142001">We now have all the needed ingredient to implement an efficient container for storage/retrieval/lookup, using the BiTree framework together with the above visitors!</para>
+      </section>
+    </section>
+  </content>
+</document>

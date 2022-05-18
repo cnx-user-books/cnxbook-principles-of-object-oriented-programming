@@ -1,0 +1,196 @@
+<document xmlns="http://cnx.rice.edu/cnxml">
+  <title>Java Syntax Primer</title>
+<metadata xmlns:md="http://cnx.rice.edu/mdml">
+  <md:content-id>m11791</md:content-id>
+  <md:title>Java Syntax Primer</md:title>
+  <md:abstract>An introduction to Java syntax covering simple Java expressions and the declaration of concrete classes and methods.</md:abstract>
+  <md:uuid>5c0569b0-700d-4028-bd7f-186b24a5cdbb</md:uuid>
+</metadata>
+<content>
+    <section id="id1166588156924">
+      <title>General:</title>
+      <para id="id1166583690002">A Java program consists of one or more classes one of them must be public and must have a method with the following signature:</para>
+      <para id="id1166580788608">
+        <code display="inline">public static void main (String[] args)</code>
+      </para>
+      <para id="id1166583610042">Basically, the <code display="inline">main()</code> method will instantiate appropriate objects and send them "messages" (by calling their methods) to perform the desired tasks.  The <code display="inline">main()</code> method should not contain any complicated program logic nor program flow control.
+
+In the example shown below, <code display="inline">PizzaClient</code> is the main class with the <code display="inline">main()</code> method.</para>
+      <figure id="id1166583696359"><media id="id1166583696359_media" alt="">
+		<image mime-type="image/png" src="../../media/graphics1-cb4a.png" id="id1166583696359__onlineimage" height="550" width="613"/>
+	</media>
+<caption>UML Class Diagram of a Java program</caption></figure>
+      <para id="id1166582815182"> Example:</para>
+      <code id="id1166589913917" display="block">public class PizzaClient {
+    /**
+     * Prints the answer to the problem stated in the above.. 
+     */
+    public void run() {
+
+        Pizza round = new Pizza (3.99, new Circle (2.5));
+        Pizza rect =  new Pizza (4.99, new Rectangle (6, 4));
+
+        PizzaDeal pd = new PizzaDeal();
+
+        System.out.println(round + " is a better deal than " + rect + ": " +
+                           pd.betterDeal(round, rect));
+
+    }
+
+    /**
+    * Main entry to the program to find the better deal.
+    * Instantiates an instance of PizzaClient and tells it to run.
+    * This is what all main() should do: instantiates a bunch of objects and
+    * "turn them loose"!
+    * There should be no complicated logic and/or control in main().
+    * @param nu not used
+    */
+    public static void  main (String[] nu) {
+        new PizzaClient().run();
+    }
+}
+
+public class Rectangle implements IShape {
+
+    private double _width;
+    private double _height;
+
+    /**
+    * Initializes this Rectangle width a given width and a given height
+    * @param w width of this Rectangle, &gt;= 0.
+    * @param h height of this Rectangle, &gt;= 0.
+    */
+    public Rectangle(double w, double h) {
+        _height  = h;
+        _width   = w;
+    }
+
+    /**
+    *  @returns this Rectangle's area.
+    */
+    public double getArea() {
+        return _height * _width;
+    }
+
+    /**
+    * Overrides the inherited method from class Object.
+    * @returns a String describing a Rectangle with its width and height.
+    */
+    public String toString() {
+        return "Rectangle(h = " + _height + ", w = " + _width + ")";
+    }
+}</code>
+      <para id="id1166584166310">
+        <emphasis>Notes on the</emphasis>
+        <code display="inline">toString()</code>
+        <emphasis>method:</emphasis>
+      </para>
+      <para id="id1166587544846"><code display="inline">toString()</code> is a method that is inherited all the way from the base class, Object. It is the method that the Java system calls by default whenever a string representation of the class is needed. For instance, <code display="inline">"This is "+ myObject</code> is equivalent to <code display="inline">"This is " + myObject.toString()</code>. DrJava will call an object's <code display="inline">toString() </code>method if you type the object's name in the interaction window, <emphasis effect="italics">without</emphasis> terminating the line with a semicolon. The return value of <code display="inline">toString()</code> is what prints out on the next line.</para>
+    </section>
+    <section id="id1166583700638">
+      <title>Comments syntax:</title>
+      <para id="id1166587973567">
+        <code display="inline">// Line-oriented - comment goes to end of the current line.</code>
+      </para>
+      <code id="id1166587535355" display="block">/*
+    block-oriented
+    can span several lines.
+*/
+    </code>
+    </section>
+    <section id="id1166593148360">
+      <title>Class definition syntax: </title>
+      <para id="id1166583492641"><emphasis effect="italics">[…] means optional</emphasis>.</para>
+      <code id="id1166589963682" display="block">[public] class class-name [inheritance-specification] {
+    [field-list;]
+    [constructor-list;]
+    [method-list;]
+    </code>
+      <para id="id1166583068452">}</para>
+      <para id="id1166583697358">Inheritance Specification looks like</para>
+      <para id="id1166580287725">
+        <code display="inline">[extends SomeClass] [implements Interface1,..., InterfaceN]</code>
+      </para>
+      <para id="id1166585433695">We will discuss the meaning of inheritance in due time.</para>
+    </section>
+    <section id="id1166584054033">
+      <title>Java Statement syntax:</title>
+      <note id="id1166583702396" type="Note">Each Java statement must terminate with a semi-colon. </note>
+    </section>
+    <section id="id1166586887874">
+      <title>Field list syntax: </title>
+      <para id="id1166583186118">A field list consists of zero or more field declarations of the form</para>
+      <para id="id1166587552590">
+        <code display="inline">[static] [final] [public | private | protected] field-type field-name [assignment];</code>
+      </para>
+      <para id="id1166585431901"> </para>
+    </section>
+    <section id="id1166583578511">
+      <title>Constructor list syntax: </title>
+      <para id="id1166584170342">A constructor list consists of zero or more constructor definitions of the form</para>
+      <code id="id1166590254410" display="block">[public | private | protected] class-name ([parameter-list]){
+    [statement-list;]
+}
+    </code>
+      <note id="id1166590595264" type="Note">The constructor's name must the same as the class name. Constructors are used for initialization of the object during the object's instantiation only.</note>
+    </section>
+    <section id="id1166584161639">
+      <title>Method list syntax: </title>
+      <para id="id1166588304566">A method list consists of zero or more method definitions of the form</para>
+      <code id="id1166583698548" display="block">[static] [final] [public | private | protected]
+    return-type method-name ([param-list]) {
+        [statement-list;]
+    }
+    </code>
+      <para id="id1166582424908">A return type <code display="inline">void</code> means the method does <emphasis effect="bold">not</emphasis> return any value.</para>
+      <para id="id1166583699332"><code display="inline">param-list</code> can be:</para>
+      <list id="id1166586485553" list-type="bulleted">
+        <item>empty; </item>
+      </list>
+      <para id="id1166583570313">for example, </para>
+      <code id="id1166583695150" display="block">public double getArea() {
+    // code ...
+}
+    </code>
+      <list id="id1166583692994" list-type="bulleted">
+        <item>of a fixed number of parameters </item>
+      </list>
+      <para id="id1166584578382">
+        <code display="inline">type1 param1, type2 param2, ... , typeN paramN</code>
+      </para>
+      <para id="id1166588000545">for example,</para>
+      <code id="id3645977" display="block">private void doSomethingWith(int n, double x, Pizza p) {
+    // code ...
+}
+    </code>
+      <list id="id8086167" list-type="bulleted">
+        <item>of a variable number of parameters (<emphasis effect="italics">this is a new feature for Java 5.0 and upward</emphasis>) </item>
+      </list>
+      <code id="id1166589639758" display="block">type1 param1, type2 param2, .., typeN... params
+    </code>
+      <para id="id1166582145580">In the above, <code display="inline">typeN... params</code> is called a variable argument list.  It must appear at the end of the whole parameter list.</para>
+      <para id="id1166584052380">for example,</para>
+      <code id="id1166584052413" display="block">private void doSomethingWith(int n, double x, Pizza... p) {
+    // code ...
+}
+    </code>
+      <para id="id1166583835201">The variable argument list can have zero or more arguments.  Here is a simple example:  use DrJava to define the following class in the definition pane.</para>
+      <code id="id1166584051969" display="block">public class VarArgExample {
+    /**
+    * returns the number of arguments in the variable argument list.
+    */
+    int argNum(int... nums) {
+        return nums.length; // the var arg list is viewed as an array
+    }
+}
+    </code>
+      <para id="id1166584169623">Compile the above class and in the interactions pane, type the following:</para>
+      <code id="id1166583358433" display="block">VarArgExample vae = new VarArgExample(); // creates a VarArgExample object
+    vae.argNum() // returns 0
+    vae.argNum(42) // returns 1
+    vae.argNum(34, -99) // returns 2
+    
+    </code>
+    </section>
+  </content>
+</document>

@@ -1,0 +1,341 @@
+<document xmlns="http://cnx.rice.edu/cnxml">
+  <title>Arrays and Array Processing</title>
+  <metadata xmlns:md="http://cnx.rice.edu/mdml">
+  <md:content-id>m17258</md:content-id>
+  <md:title>Arrays and Array Processing</md:title>
+  <md:abstract>Gives the basics of array storage, with examples of basic array processing in Java, and contrasts arrays with lists.</md:abstract>
+  <md:uuid>d0997ca7-81ef-464a-a9bf-39b8041d33af</md:uuid>
+</metadata>
+
+<content>
+    <para id="id12032901">There are many ways to store data. So far, we have covered linear recursive structures, lists, and binary recursive structures, trees. Let's consider another way of storing data, as a contiguous, numbered (indexed) set of data storage elements:</para>
+    <para id="id7953810">
+      <emphasis>anArray =</emphasis>
+    </para>
+    <table id="id10577224" summary="">
+      <tgroup cols="10">
+        <colspec colnum="1" colname="c1"/>
+        <colspec colnum="2" colname="c2"/>
+        <colspec colnum="3" colname="c3"/>
+        <colspec colnum="4" colname="c4"/>
+        <colspec colnum="5" colname="c5"/>
+        <colspec colnum="6" colname="c6"/>
+        <colspec colnum="7" colname="c7"/>
+        <colspec colnum="8" colname="c8"/>
+        <colspec colnum="9" colname="c9"/>
+        <colspec colnum="10" colname="c10"/>
+        <tbody>
+          <row>
+            <entry>itemA</entry>
+            <entry>itemB</entry>
+            <entry>itemC</entry>
+            <entry>itemD</entry>
+            <entry>itemE</entry>
+            <entry>itemF</entry>
+            <entry>itemG</entry>
+            <entry>itemH</entry>
+            <entry>itemI</entry>
+            <entry>itemJ</entry>
+          </row>
+          <row>
+            <entry>0</entry>
+            <entry>1</entry>
+            <entry>2</entry>
+            <entry>3</entry>
+            <entry>4</entry>
+            <entry>5</entry>
+            <entry>6</entry>
+            <entry>7</entry>
+            <entry>8</entry>
+            <entry>9</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <para id="id11660903">This "<term>array</term>" of elements allows us to access any individual element using a numbered index value.</para>
+    <definition id="defarray">
+      <term>array</term>
+      <meaning id="id6800976">At its most basic form, a random access data structure where any element can be accessed by specifying a single index value corresponding to that element.</meaning>
+      <example id="exarray">
+        <para id="exarray1">
+          <code>anArray[4]</code> gives us <code>itemE</code>. Likewise, the statement <code>anArray[7] = 42</code> should replace <code>itemH</code> with <code>42</code>.
+        </para>
+      </example>
+    </definition>
+    <note id="id4419782">Notice however, that the above definition is <emphasis>not</emphasis> a recursive definition. This will cause problems.</note>
+    <section id="id-930391218655">
+      <title>Arrays in Java </title>
+      <list id="id9270768" list-type="bulleted">
+        <item>Arrays... 
+          <list id="id9650651" list-type="bulleted">
+            <item>are contiguous (in memory) sets of object references (or values, for primitives), </item>
+            <item>are objects, </item>
+            <item>are dynamically created (via <code>new</code>), and </item>
+            <item>may be assigned to variables of type <code>Object</code> or primitives </item>
+          </list>
+        </item>
+        <item>An array object contains zero or more <emphasis>unnamed</emphasis> variables of the <emphasis>same</emphasis> type. These variables are commonly called the <term>elements</term> of the array.</item>
+        <item>A non-negative integer is used to name each element. For example, <code>arrayOfInts[i]</code> refers to the <emphasis>i+1</emphasis>st element in the <code>arrayOfInts</code> array. In computer-ese, an array is said to be a "random access" container, because you can directly (and I suppose, randomly) access any element in the array. </item>
+        <item>An array has a limited amount of intelligence, for instance, it does know its maximum length at all times, e.g. <code>arrayOfInts.length</code>.</item>
+        <item>Arrays have the advantage that they
+          <list id="id10381820" list-type="bulleted">
+            <item>provide random access to any element </item>
+            <item>are fast. </item>
+            <item>require minimum amounts of memory </item>
+          </list>
+        </item>
+      </list>
+      <para id="id9511365">More information on arrays can be found in the <link url="http://www.exciton.cs.rice.edu/JavaResources/Java/declarations.htm#Arrays">Java Resources web site page on arrays</link></para>
+      <note id="id7217832" type="Remember"><label>Remember</label><emphasis>Arrays are size and speed at a price.</emphasis></note>
+      <section id="id-0247172192356">
+        <title>Array Types</title>
+        <list id="id10684709" list-type="bulleted">
+          <item>An array type is written as the name of an element type followed by one or more empty pairs of square brackets.
+            <list id="id9321898" list-type="bulleted">
+              <item>For example, <code>int[]</code> is the type corresponding to a one-dimensional array of integers.</item>
+            </list>
+          </item>
+          <item>An array's length is not part of its type.</item>
+          <item>The element type of an array may be any type, whether primitive or reference, including interface types and abstract class types.</item>
+        </list>
+      </section>
+      <section id="id-632593408698">
+        <title>Array Variables</title>
+        <list id="id8627248" list-type="bulleted"><item>Array variables are declared like other variables: a declaration consists of the array's type followed by the array's name. For example, <code>double[][] matrixOfDoubles;</code> declares a variable whose type is a two-dimensional array of double-precision floating-point numbers.</item>
+          <item>Declaring a variable of array type does not create an array object. It only creates the variable, which can contain a reference to an array.</item>
+          <item>Because an array's length is not part of its type, a single variable of array type may contain references to arrays of different lengths.</item>
+          <item>To complicate declarations, C/C++-like syntax is also supported, for example, 
+<code id="id7868010" display="block">
+double rowvector[], colvector[], matrix[][];
+</code>This declaration is equivalent to 
+<code id="id3322164" display="block">
+double[] rowvector, colvector, matrix[];
+</code>or 
+<code id="id8001698" display="block">
+double[] rowvector, colvector;
+double[][] matrix;
+</code>
+Please use the latter!</item>
+        </list></section>
+      <section id="id-992659079188">
+        <title>Array Creation</title>
+        <list id="id7499554" list-type="bulleted">
+          <item>Array objects, like other objects, are created with <code>new</code>. For example, <code>String[] arrayOfStrings = new String[10];</code>declares a variable whose type is an array of strings, and initializes it to hold a reference to an array object with room for ten references to strings. </item>
+          <item>Another way to initialize array variables is <code id="id3288920" display="block">
+int[] arrayOf1To5 = { 1, 2, 3, 4, 5 };
+String[] arrayOfStrings = { "array",
+                            "of",
+                            "String" };
+Widget[] arrayOfWidgets = { new Widget(), new Widget() };</code></item>
+          <item>Once an array object is created, it never changes length! <code>int[][] arrayOfArrayOfInt = {{ 1, 2 }, { 3, 4 }};</code></item>
+          <item>The array's length is available as a final instance variable length. For example, <code id="id3748580" display="block">int[] arrayOf1To5 = { 1, 2, 3, 4, 5 };
+System.out.println(arrayOf1To5.length);</code>would print ``5''. </item>
+        </list>
+      </section>
+      <section id="id-77508696297">
+        <title>Array Accesses</title>
+        <list id="id9088694" list-type="bulleted">
+          <item>Indices for arrays must be <code>int</code> values that are greater than or equal to 0 and less than the length of the array. Remember that computer scientists always count starting at zero, not one! </item>
+          <item>All array accesses are checked at run time: An attempt to use an index that is less than zero or greater than or equal to the length of the array causes an <code>IndexOutOfBoundsException</code> to be thrown. </item>
+          <item>Array elements can be used on either side of an equals sign:
+            <list id="id8726705" list-type="bulleted">
+              <item><code>myArray[i] = aValue;</code></item>
+              <item><code>someValue = myArray[j];</code></item>
+            </list>
+          </item>
+          <item>Accessing elements of an array is fast and the time to access any element is independent of where it is in the array. </item>
+          <item>Inserting elements into an array is very slow because all the other elements following the insertion point have to be moved to make room, if that is even possible. </item>
+        </list>
+      </section>
+    </section>
+    <section id="id-977340659895">
+      <title>Array Processing Using Loops</title>
+      <para id="id12039160">More information on loops can be found at the <link url="http://www.exciton.cs.rice.edu/JavaResources/Java/loops.htm">Java Resources web site page on loops</link>.</para>
+      <para id="id8600569">The main technique used to process arrays is the <term>for loop</term>. A <code>for</code> loop is a way of processing each element of the array in a sequential manner.</para>
+      <para id="id8280062">Here is a typical <code>for</code> loop:</para>
+      <code id="id5027782" display="block">
+// Sum the number of elements in an array of ints, myArray.
+int sum = 0;  // initialize the sum
+
+for(int idx=0; idx &lt; myArray.length; idx++) {  //start idx @ 0; end idx at length-1;
+                                               //increment idx every time the loop is processed.
+    sum += myArray[idx];  // add the idx'th element of myArray to the sum
+}</code>
+      <para id="id10070410">There are a number of things going on in the above <code>for</code> loop:</para>
+      <list id="id10433498" list-type="bulleted">
+        <item><emphasis>Before the loop starts</emphasis>, the index <code>idx</code> is being declared and initialized to zero. <code>idx</code> is visible only within the <code>for</code> loop body (between the curly braces). </item>
+        <item><emphasis>At the begnning of each loop iteration</emphasis>, the index <code>idx</code> is being tested in a "termination condition", in this case, <code>idx</code> is compared to the length of the list. If the termination condition evaluates to <code>false</code>, the loop will immediately terminate. </item>
+        <item><emphasis>During each loop iteration</emphasis>, the value of the <code>idx</code>'s element in the array is being added to the running sum. </item>
+        <item><emphasis>After each loop iteration</emphasis>, the index <code>idx</code> is being incremented. </item>
+      </list>
+      <para id="id10491715">One can traverse an array in any direction one wishes:</para>
+      <code id="id6826766" display="block">
+// Sum the number of elements in an array of ints, myArray.
+int sum = 0; // initialize the sum
+
+for(int idx=myArray.length-1; 0&lt;=idx; idx--) { //start idx @ length-1; end idx at 0;
+                                               //decrement idx every time the loop is processed. 
+    sum += myArray[idx]; // add the idx'th element of myArray to the sum
+}</code>
+      <para id="id10314144">The above loop sums the list just as well as the first example, but it does it from back to front. Note however, that we had to be a little careful on how we initialized the index and how we set up the termination condition.</para>
+      <para id="id4706571">Here's a little more complicated loop:</para>
+      <code id="id3989027" display="block">// Find the index of the smallest element in an array of ints, myArray.
+int minIdx = 0; // initialize the index. Must be declared outside the loop.
+
+if(0==myArray.length) throw new NoSuchElementException("Empty array!"); //No good if array 
+                                                                        //is empty!
+else {
+    for(minIdx = 0, int j = 1; j&lt;myArray.length; j++) { //start minIdx @ 0, start index @ 1;
+                                                           //end index at length-1; increment
+                                                           // index every time the loop is 
+                                                           //processed. 
+        if(myArray[minIdx] &gt; myArray[j])
+            minIdx = j; // found new minimum
+    }
+}</code><para id="id12286474">Some important things to notice about this algorithm:</para>
+      <list id="id10621748" list-type="bulleted">
+        <item>The empty case must be checked explicitly — no polymorphism to help you out here!</item>
+        <item>The desired result index <emphasis>cannot</emphasis> be declared inside the for loop because otherwise it won't be visible to the outside world.</item>
+        <item>Be careful about using the <code>minIdx</code> value if the array was indeed empty--it's an invalid value! It can't be set to a valid value because otherwise you can't tell the difference between a value that was never set and one that was.</item>
+        <item>The <code>for</code> loop has two initialization statements separated by a comma.</item>
+        <item>The loop does work correctly if the array only has one element, but only because the termination check is done before the loop body.</item>
+        <item>Notice that to prove that this algorithm works properly, one must make separate arguments about the empty case, the one element case and the n-element case. Contrast this to the much simpler list algorithm that only needs an empty and non-empty cases.</item>
+      </list>
+      <para id="id11577280">For convenience, Java 5.0 now offers a compact syntax used for traversing <emphasis>all</emphasis> the elements of an array or of anything that subclasses type <link url="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Iterable.html"><code>Iterable</code></link>:</para>
+      <code id="id6456044" display="block">
+MyType[] myArray;  // array is initialized with data somewhere
+
+for(MyType x: myArray){
+    // code involving x, i.e. each element in the array
+}</code>
+      <para id="id8703065">It is important to remember that this syntax is used when one wants to process every element in an array (or an <code>Iterable</code> object) <emphasis>independent of order of processing</emphasis> because Java does not guarantee a traversal order. </para>
+      <para id="id10560053">Let's look at an algorithm where we might not want to process the entire array:</para>
+      <code id="id7867466" display="block">
+// Find the first index of a given value in an array
+
+int idx = -1;  // initialize the index to an invalid value.
+
+for(int j=0; j&lt;myArray.length; j++) {  //no initialization ; end index at length-1;
+                                       //increment index every time the loop is processed. 
+    if(desiredValue == myArray[j]) { // found match!
+        idx = j;  // save the index.
+        break;  // break out of the loop.
+    }
+}
+</code>
+      <para id="id8805630">Notes: </para>
+      <list id="id9517600" list-type="bulleted">
+        <item>The only way you can tell if the desired value was actually found or not is if the <emphasis>value</emphasis> of <code>idx</code> is -1 or not. Thus the value of <code>idx</code> must be checked before it is ever used.</item>
+        <item>The resultant <code>idx</code> variable cannot be used as the index inside the loop because one would not be able to tell if the desired value was found or not unless one also checked the length of the array. This is because if the desired value was never found, <code>idx</code> at the end of the loop would equal the length of the array, which is only an invalid value if you already know the length of the array.</item>
+        <item>The <code>break</code> statement stops the loop right away and execution resumes at the point right after end of the loop.</item>
+      </list>
+      <para id="id11092229">There is a counterpart to <code>break</code> called <code>continue</code> that causes the loop to immediately progress to the beginning of the next iteration. It is used much more rarely than <code>break</code>, usually in situations where there are convoluted and deeply nested <code>if</code>-<code>else</code> statements.</para>
+      <para id="id7961627">Can you see that the price of the compact syntax of for loops is a clear understandability of the process?</para>
+      <section id="id-166184647917"><title>While loops</title><para id="id11426370"><code>for</code> loops are actually a specialized version of <code>while</code> loops. <code>while</code> loops have no special provisions for initialization or loop incrementing, just the termination condition.</para>
+        <para id="id11721443"><code>while</code> loops iterate through the loop body until the termination condition evaluates to a <code>false</code> value.</para>
+        <para id="id9087551">The following <code>for</code> loop:</para>
+        <code id="id6524902" display="block">
+for([initialization statement]; [termination expr] ; [increment statement]) {
+
+    [loop body]
+
+}</code>
+        <para id="id11253813">Is exactly equivalent to the following:</para>
+        <code id="id3854293" display="block">
+{
+    [initialization statement];
+
+    while([termination expr]) {
+
+        [loop body]
+        
+        [increment statement];
+
+    }
+}</code>
+        <para id="id7866743">Note the outermost curly braces that create the scoping boundary that encapsulates any variable declared inside the <code>for</code> loop.</para>
+        <para id="id7775998">The Java compiler will automatically convert a <code>for</code> loop to the above <code>while</code> loop.</para>
+        <para id="id7850914">Here is the above algorithm that finds a desired value in an array, translated from a <code>for</code> loop to a <code>while</code> loop:</para>
+        <code id="id7016400" display="block">
+// Find the index of the first occurance of desiredValue in myArray, using a while loop.
+{
+    idx = -1;  // initialize the final result
+    int j = 0; // initialize the index
+
+    while(j &lt; myArray.length) {   // loop through the array
+        if(desiredValue == myArray[j]) {   // check if found the value
+            idx = j;  // save the index
+            break;   // exit the loop.
+        }
+        
+        j++;   // increment the index
+    }
+}</code>
+        <para id="id3973824">Basically, <code>for</code> loops give up some of the flexibility of a <code>while</code> loop in favor of a more compact syntax.</para>
+        <para id="id7960813"><code>while</code> loops are very useful when the data is not sequentially accessible via some sort of index. Another useful scenario for <code>while</code> loops is when the algorithm is waiting for something to happen or for a value to come into the system from an outside (relatively) source.</para>
+        <para id="id9491648"><code>do</code>-<code>while</code> loops are the same as <code>while</code> loops except that the conditional statement is evaluated at the end of the loop body, not its beginning as in a <code>for</code> or <code>while</code> loop. </para>
+        <para id="id9459222">See the <link url="http://www.exciton.cs.rice.edu/JavaResources/Java/loops.htm">Java Resources web site page on loops</link> for more information on processing lists using while loops.</para>
+      </section><section id="id-687257477143">
+        <title>for-each loops</title>
+        <para id="id11678532">An exceedingly common <code>for</code>-loop to write is the following;</para>
+        <code id="id4840038" display="block">
+Stuff[] s_array = new Stuff[n];
+// fill s_array with values
+
+for(int i = 0; i &lt; s_array.length; i++) {
+    // do something with s_array[i]
+}</code>
+        <para id="id10315103">Essentially, the loop does some invariant processing on every element of the array.</para>
+        <para id="id8619102">To make life easier, Java implements the <term>for-each loop</term>, which is just an alternate <code>for</code> loop syntax:</para>
+        <code id="id4836225" display="block">
+Stuff[] s_array = new Stuff[n];
+// fill s_array with values
+
+for(Stuff s:s_array) {
+    // do something with s
+}</code>
+        <para id="id11708797">Simpler, eh?</para>
+        <para id="id12027173">It turns out that the for-each loop is not simply relegated to array. Any class that implements the <code>Iterable</code> interface will work. This is discussed in another module, as it involves the use of generics.</para>
+      </section>
+    </section>
+    <section id="id-435885078477">
+      <title>Arrays vs. Lists</title>
+      <para id="id11084630">In no particular order... </para>
+      <list id="larrayslists" list-type="bulleted">
+        <item>Arrays:
+          <list id="larrays">
+            <item>Fast access to all elements.</item>
+            <item>Fixed number of elements held.</item>
+            <item>Difficult to insert elements.</item>
+            <item>Can run into problems with uninitialized elements.</item>
+            <item>Minimal safety for out-of-bounds indices.</item>
+            <item>Minimal memory used</item>
+            <item>Simple syntax</item>
+            <item>Must use procedural techniques for processing.</item>
+            <item>Often incompatible with OO architectures.</item>
+            <item>Difficult to prove that processing algorithms are correct.</item>
+            <item>Processing algorithms can be very fast.</item>
+            <item>Processing algorithms can be minimally memory intensive</item>
+          </list>
+        </item>
+        <item>Lists:
+          <list id="llists">
+            <item>Slow access except to first element, which is fast.</item>
+            <item>Unlimited number of elements held.</item>
+            <item>Easy to insert elements.</item>
+            <item>Encountering uninitialized elements very rare to impossible.</item>
+            <item>Impossible to make out-of-bounds errors.</item>
+            <item>Not optimized for memory usage.</item>
+            <item>More cumbersome syntax.</item>
+            <item>Can use OO and polymorphic recursive techniques for processing.</item>
+            <item>Very compatible with OO architectures.</item>
+            <item>Easy to prove that processing algorithms are correct.</item>
+            <item>Processing algorithms can be quite fast if tail-recursive and using a tail-call optimizing compiler.</item>
+            <item>Processing algorithms can be very memory intensive unless tail-recursive and using a tail-call optimizing compiler.</item>
+          </list>
+        </item>
+      </list>
+      <note id="id5958776" type="Bottom Line"><label>Bottom Line</label>Arrays are optimized for size and random access speed at the expense of OO design and recursion. If you do not need speed or low memory, do not use an array. If you must use an array, tightly encapsulate it so that it does not affect the rest of your system.</note>
+    </section>
+  </content>
+</document>

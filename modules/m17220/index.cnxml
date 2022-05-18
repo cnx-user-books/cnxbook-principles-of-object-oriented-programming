@@ -1,0 +1,1025 @@
+<document xmlns="http://cnx.rice.edu/cnxml">
+  <title>Inner Classes</title>
+  <metadata xmlns:md="http://cnx.rice.edu/mdml">
+  <md:content-id>m17220</md:content-id>
+  <md:title>Inner Classes</md:title>
+  <md:abstract>In Java, besides having fields and methods, a class can also have other classes as members.  Just like fields and methods, a class member of can be static or non-static.  A non-static class member is called an inner class.  Inner class is a programming construct based on the powerful concept of closure prevalent in the functional programming paradigm.  It allows on-the-fly creation of objects, which can communicate transparently with the enclosing object inside of which they come into existence. We illustrate the rationale and use of inner classes via a progression from top level helper classes to named static nested classes, to non-static named classes, and to anonymous inner classes with dynamic on-the-fly instantiation.</md:abstract>
+  <md:uuid>f51b6fa1-971c-47da-8088-74df02f750cc</md:uuid>
+</metadata>
+
+<content>
+    <section id="id-859699651402">
+      <title>1. Helpers are the Variants</title>
+      <para id="id6261994">Consider again the familiar problem of computing a <code>String</code> representation of an <code>IList</code> that displays a comma-separated list of its elements delimited by a pair of matching parentheses.  We have seen at least one way to compute such a <code>String</code> representation using a visitor called <code>ToStringAlgo</code>.  Below are three different algorithms, <code>ToString1</code>, <code>ToString2</code> and <code>ToString3</code>, that compute the same <code>String</code> representation.</para>
+      <table id="id8080158" summary=""><tgroup cols="2">
+          <colspec colnum="1" colname="c1"/>
+          <colspec colnum="2" colname="c2"/>
+          <tbody>
+            <row>
+              <entry>Main Visitor <code>ToString1</code>  </entry>
+              <entry>Tail-recursive helper <code>ToString1Help</code></entry>
+            </row>
+            <row>
+              <entry>
+                <code id="id45976145" display="block">
+package listFW.visitor;
+import listFW.*;
+public class ToString1 implements IListAlgo 
+{
+    public static final ToString1 
+        Singleton = new ToString1();
+
+    private ToString1() {}
+
+    public Object emptyCase(
+            IMTList host, Object... nu) {
+        return "()";
+    }
+	
+    public Object nonEmptyCase(
+            INEList host, Object... nu) {
+        return host.getRest().execute(
+            ToString1Help.Singleton, 
+            "(" + host.getFirst());
+    }
+}</code></entry>
+              <entry>
+                <code id="id45984425" display="block">
+/**
+ * Helps ToString1 compute the String 
+ * representation of the rest of the list. 
+ * It takes as input the accumulated 
+ * string representation of the preceding
+ * list.  This accumulated string contains 
+ * the left most parenthesis and all the 
+ * elements of the preceding list, each 
+ * separated by a comma.
+ */
+class ToString1Help implements IListAlgo {
+    public static final ToString1Help 
+        Singleton = new ToString1Help();
+
+    private ToString1Help() {}
+
+    public Object emptyCase(
+        IMTList host, Object... acc) { 
+        return acc[0] + ")";
+    }
+	
+    public Object nonEmptyCase(
+        INEList host, Object... acc) {
+        return host.getRest().execute(this, 
+            acc[0] + ", " 
+            + host.getFirst());
+    }
+}</code></entry>
+            </row>
+            <row>
+              <entry namest="c1" nameend="c2"/>
+            </row>
+          </tbody>
+        </tgroup>
+      </table><para id="id3478288"> </para>
+      <table id="id3478292" summary=""><tgroup cols="2">
+          <colspec colnum="1" colname="c1"/>
+          <colspec colnum="2" colname="c2"/>
+          <tbody>
+            <row>
+              <entry>Main Visitor <code>ToString2</code></entry>
+              <entry>Tail-recursive helper <code>ToString2Help</code></entry>
+            </row>
+            <row>
+              <entry>
+                <code id="id45984572" display="block">
+package listFW.visitor;
+import listFW.*;
+
+public class ToString2 implements IListAlgo 
+{ 
+    public static final ToString2 
+        Singleton = new ToString2();
+
+    private ToString2() {}
+	
+    public Object emptyCase(IMTList host, 
+                            Object... nu) {
+        return "()";
+    }
+	
+    public Object nonEmptyCase(
+        INEList host, Object... nu) {
+        
+        return host.getRest().execute(
+            ToString2Help.Singleton, 
+            host.getFirst().toString());
+    }
+}</code></entry>
+              <entry>
+                <code id="id45984596" display="block">
+/**
+ * Helps ToString2 compute the String 
+ representation of the rest of the list.
+ */
+class ToString2Help implements IListAlgo {
+    public static final ToString2Help 
+        Singleton = new ToString2Help();
+
+    private ToString2Help() {}
+
+    public Object emptyCase(
+        IMTList host, Object... acc) {
+        
+        return "(" + acc[0] + ")";
+    }
+
+    public Object nonEmptyCase(
+        INEList host, Object... acc) {
+
+        return host.getRest().execute(this, 
+            acc[0] + ", " 
+            + host.getFirst());
+    }
+}</code></entry>
+            </row>
+            <row>
+              <entry namest="c1" nameend="c2"> </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table><para id="id4375335"> </para>
+      <table id="id4375340" summary=""><tgroup cols="2">
+          <colspec colnum="1" colname="c1"/>
+          <colspec colnum="2" colname="c2"/>
+          <tbody>
+            <row>
+              <entry>Main Visitor <code>ToString3</code></entry>
+              <entry> Non tail-recursive helper <code>ToString3Help</code></entry>
+            </row>
+            <row>
+              <entry>
+                <code id="id45984744" display="block">
+package listFW.visitor;
+import listFW.*;
+
+public class ToString3 implements IListAlgo 
+{
+    public static final ToString3 
+        Singleton = new ToString3();
+
+    private ToString3() {}
+
+    public Object emptyCase(
+        IMTList host, Object... nu) {
+
+        return "()";
+    }
+
+    public Object nonEmptyCase(
+        INEList host, Object... nu) {
+        return "(" + host.getFirst() 
+	    + host.getRest().execute(
+                ToString3Help.Singleton);
+    }
+}</code></entry>
+              <entry>
+                <code id="id45984768" display="block">
+/**
+ * Helps ToString3 compute the String 
+ * representation of the rest of the list.
+ */
+class ToString3Help implements IListAlgo {
+    public static final ToString3Help 
+        Singleton = new ToString3Help();
+
+    private ToString3Help() {}
+
+    public Object emptyCase(
+        IMTList host, Object... nu) {
+
+        return ")";
+    }
+
+    public Object nonEmptyCase(
+        INEList host, Object... nu) {
+         return ", " + host.getFirst() + 
+              host.getRest().execute(this);
+    }
+}</code></entry>
+            </row>
+            <row>
+              <entry namest="c1" nameend="c2"> </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table><para id="id5449665">What makes each of the above different from one another is its helper visitor. Each helper defined in the above will only perform correctly if it is passed the appropriate parameter.  In a sense, each helper is an implementation of the main visitor.  We should hide each of them inside of its corresponding main visitor to ensure proper usage and achieve full encapsulation of the main visitor.</para>
+    </section>
+    <section id="id-275923494886">
+      <title>2. Hiding Helpers</title>
+      <para id="id4420906">The most secure way to hide the helper visitor is to move it inside of the main visitor and make it a <code>private static</code> class. </para>
+      <para id="id7440006">  </para>
+      <table id="id8138086" summary=""><tgroup cols="2">
+          <colspec colnum="1" colname="c1" colwidth="2*"/>
+          <colspec colnum="2" colname="c2"/>
+          <tbody>
+            <row>
+              <entry>Hiding Named Helper Visitor inside of <code>ToString1</code></entry>
+              <entry>Comments</entry>
+            </row>
+            <row>
+              <entry>
+                <code id="id45984965" display="block">
+package listFW.visitor;
+import listFW.*;
+
+public class ToString1WithHiddenHelper 
+                      implements IListAlgo { 
+
+    public static final ToString1WithHiddenHelper 
+        Singleton = new ToString1WithHiddenHelper();
+		
+    private ToString1WithHiddenHelper() {
+    }</code>
+              </entry>
+              <entry>Singleton Pattern</entry>
+            </row>
+            <row>
+              <entry>
+                <code id="id45985002" display="block">
+    private static class HiddenHelper 
+                implements IListAlgo {
+        public static final HiddenHelper 
+            Singleton = new HiddenHelper();
+
+        private HiddenHelper() {}
+
+        public Object emptyCase(IMTList host, 
+                                Object... acc) {
+            return acc[0] + ")";
+        }
+		
+        public Object nonEmptyCase(INEList host, 
+                                   Object... acc) {
+            return host.getRest().execute(this, 
+                acc[0] + ", " + host.getFirst());
+        }
+    }
+</code>
+              </entry>
+              <entry>The helper visitor has a name, <code>HiddenHelper</code>, and is defined privately and globally (<code>static</code>) inside of the main visitor <code>ToString1WithHiddenHelper</code>.</entry>
+            </row>
+            <row>
+              <entry>
+                <code id="id45985067" display="block">public Object emptyCase(IMTList host, 
+                            Object... nu) {
+        return "()";
+    }
+
+    public Object nonEmptyCase(INEList host, 
+                               Object... nu) {
+        return host.getRest().execute(
+            HiddenHelper.Singleton, 
+            "(" + host.getFirst());
+    }
+}</code></entry>
+              <entry>The main visitor calls on its hidden helper singleton to help complete the job.</entry>
+            </row>
+            <row>
+              <entry namest="c1" nameend="c2"> </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table><para id="id6456821"> </para>
+      <table id="id6249121" summary=""><tgroup cols="2">
+          <colspec colnum="1" colname="c1" colwidth="6*"/>
+          <colspec colnum="2" colname="c2"/>
+          <tbody>
+            <row>
+              <entry>Hiding Named Helper Visitor inside of <code>ToString2</code></entry>
+              <entry>Comments </entry>
+            </row>
+            <row>
+              <entry>
+                <code id="id45985213" display="block">
+package listFW.visitor;
+import listFW.*;
+
+public class ToString2WithHiddenHelper implements IListAlgo { 
+    public static final 
+        ToString2WithHiddenHelper Singleton 
+            = new ToString2WithHiddenHelper();
+
+    private ToString2WithHiddenHelper() {
+    }</code></entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>
+                <code id="id45985249" display="block">private static class HiddenHelper implements IListAlgo {
+        public static final HiddenHelper Singleton = new HiddenHelper();
+
+        private HiddenHelper() {
+        }
+
+        public Object emptyCase(IMTList host, Object... acc) {
+            return "(" + acc[0] + ")";
+        }
+
+        public Object nonEmptyCase(INEList host, Object... acc) {
+            return host.getRest().execute(this, 
+                acc[0] + ", " + host.getFirst());
+        }
+    }</code></entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>
+                <code id="id45985288" display="block">public Object emptyCase(IMTList host, Object... nu) {
+        return "()";
+    }
+   
+   public Object nonEmptyCase(INEList host, Object... nu) {
+        return host.getRest().execute(HiddenHelper.Singleton, 
+            host.getFirst().toString());
+    }
+}</code></entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry namest="c1" nameend="c2"> </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table><para id="id7996865"> </para>
+      <table id="id8164207" summary=""><tgroup cols="2">
+          <colspec colnum="1" colname="c1" colwidth="5*"/>
+          <colspec colnum="2" colname="c2"/>
+          <tbody>
+            <row>
+              <entry>Hiding Named Helper Visitor inside of <code>ToString3</code></entry>
+              <entry>Comments </entry>
+            </row>
+            <row>
+              <entry>
+                <code id="id45985432" display="block">
+package listFW.visitor;
+import listFW.*;
+
+public class ToString3WithHiddenHelper implements IListAlgo {
+    public static final 
+        ToString3WithHiddenHelper Singleton 
+            = new ToString3WithHiddenHelper();
+
+    private ToString3WithHiddenHelper() {
+    }</code></entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>
+                <code id="id45985469" display="block">private static class HiddenHelper implements IListAlgo {
+        public static final HiddenHelper Singleton 
+            = new HiddenHelper();
+    
+        private HiddenHelper() {
+        }
+    
+        public Object emptyCase(IMTList host, Object... nu) {
+            return ")";
+        }
+
+        public Object nonEmptyCase(INEList host, Object... nu) {
+            return ", " + host.getFirst() 
+                + host.getRest().execute(this);
+        }
+    }</code></entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>
+                <code id="id45985507" display="block">public Object emptyCase(IMTList host, Object... nu) {
+        return "()";
+    }
+
+    public Object nonEmptyCase(INEList host, Object...bu) {
+        return "(" + host.getFirst() 
+            + host.getRest().execute(HiddenHelper.Singleton);
+    }
+}</code></entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry namest="c1" nameend="c2"> </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table><para id="id8037370"/>
+    </section>
+    <section id="id-976450067957">
+      <title>3. Anonymous Helpers</title>
+      <para id="id8050539"> </para>
+      <table id="id5474295" summary="ToString1WithAnonymousHelper">
+<tgroup cols="2"><colspec colnum="1" colname="c1" colwidth="6*"/>
+          <colspec colnum="2" colname="c2"/>
+          <tbody>
+            <row>
+              <entry>Anonymous Helper Visitor inside of <code>ToString1</code></entry>
+              <entry>Comments </entry>
+            </row>
+            <row>
+              <entry>
+                <code id="id45985680" display="block">
+package listFW.visitor;
+import listFW.*;
+
+public class ToString1WithAnonymousHelper implements IListAlgo { 
+    public static final
+        ToString1WithAnonymousHelper Singleton 
+            = new ToString1WithAnonymousHelper();
+
+        private ToString1WithAnonymousHelper() {
+    }</code></entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>
+                <code id="id45985717" display="block">private static final IListAlgo AnonymousHelper = new IListAlgo() {
+        public Object emptyCase(IMTList host, Object... acc) {
+            return acc[0] + ")";
+        }
+
+        public Object nonEmptyCase(INEList host, Object... acc) {
+            return host.getRest().execute(this, 
+                acc[0] + ", " + host.getFirst());
+        }
+    }; // PAY ATTENTION TO THE SEMI-COLON HERE!</code></entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>
+                <code id="id45985755" display="block">public Object emptyCase(IMTList host, Object... nu) {
+        return "()";
+    }
+
+    public Object nonEmptyCase(INEList host, Object... nu) {
+        return host.getRest().execute(AnonymousHelper, 
+            "(" + host.getFirst());
+    }
+}</code></entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry> </entry>
+              <entry> </entry>
+            </row>
+          </tbody>
+        
+
+
+
+</tgroup>
+</table><para id="id4374896"> </para>
+      <table id="id4374901" summary=""><tgroup cols="2">
+          <colspec colnum="1" colname="c1" colwidth="5*"/>
+          <colspec colnum="2" colname="c2"/>
+          <tbody>
+            <row>
+              <entry>Anonymous Helper Visitor inside of <code>ToString2</code></entry>
+              <entry>Comments </entry>
+            </row>
+            <row>
+              <entry>
+                <code id="id45985903" display="block">
+package listFW.visitor;
+import listFW.*;
+
+public class ToString2WithAnonymousHelper implements IListAlgo { 
+    public static final
+        ToString2WithAnonymousHelper Singleton 
+                    = new ToString2WithAnonymousHelper();
+    private ToString2WithAnonymousHelper() {
+    }</code>
+              </entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>
+                <code id="id45985939" display="block">private static final IListAlgo AnonymousHelper = new IListAlgo() {
+        public Object emptyCase(IMTList host, Object... acc) {
+            return "(" + acc[0] + ")";
+        }
+
+        public Object nonEmptyCase(INEList host, Object... acc) {
+            return host.getRest().execute(this, 
+                        acc[0] + ", " + host.getFirst());
+        }
+    }; // PAY ATTENTION TO THE SEMI-COLON HERE!</code>
+              </entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>
+                <code id="id45985977" display="block">public Object emptyCase(IMTList host, Object... nu) {
+        return "()";
+    }
+
+    public Object nonEmptyCase(INEList host, Object... nu) {
+        return host.getRest().execute(AnonymousHelper, 
+                host.getFirst().toString());
+    }
+}</code>
+              </entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry namest="c1" nameend="c2"> </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table><para id="id4984387"> </para>
+      <table id="id4431575" summary=""><tgroup cols="2">
+          <colspec colnum="1" colname="c1" colwidth="5*"/>
+          <colspec colnum="2" colname="c2"/>
+          <tbody>
+            <row>
+              <entry>Anonymous Helper Visitor inside of ToString3 </entry>
+              <entry>Comments </entry>
+            </row>
+            <row>
+              <entry>
+                <code id="id45767545" display="block">
+package listFW.visitor;
+import listFW.*;
+
+public class ToString3WithAnonymousHelper implements IListAlgo { 
+    public static final
+        ToString3WithAnonymousHelper Singleton 
+            = new ToString3WithAnonymousHelper();
+
+    private ToString3WithAnonymousHelper() {
+    }</code></entry>
+<entry/>
+            </row>
+            <row>
+              <entry>
+                <code id="id45767574" display="block">private static final IListAlgo AnonymousHelper = new IListAlgo() {
+        public Object emptyCase(IMTList host, Object... nu) {
+            return ")";
+        }
+
+        public Object nonEmptyCase(INEList host, Object... nu) {
+            return ", " + host.getFirst() 
+                + host.getRest().execute(this);
+        }
+    }; // PAY ATTENTION TO THE SEMI-COLON HERE!</code></entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>
+                <code id="id45767612" display="block">public Object emptyCase(IMTList host, Object... nu) {
+        return "()";
+    }
+    
+    public Object nonEmptyCase(INEList host, Object... nu) {
+        return "(" + host.getFirst() 
+            + host.getRest().execute(AnonymousHelper);
+    }
+}</code></entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry namest="c1" nameend="c2"> </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table></section>
+    <section id="id-170471656109">
+      <title>4. Factory with Anonymous Inner Classes</title>
+      <table id="id6491687" summary=""><tgroup cols="2">
+          <colspec colnum="1" colname="c1" colwidth="3*"/>
+          <colspec colnum="2" colname="c2"/>
+          <tbody>
+            <row>
+              <entry> </entry>
+              <entry>Comments </entry>
+            </row>
+            <row>
+              <entry>
+                <code id="id45767758" display="block">
+package listFW.factory;
+import listFW.*;
+
+public class InnerCompListFact implements IListFactory {
+    public static final InnerCompListFact Singleton 
+        = new InnerCompListFact();
+
+    private InnerCompListFact() {
+    }</code></entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>
+                <code id="id45767793" display="block">private final static IListAlgo ToStrHelp = new IListAlgo() {
+        public Object emptyCase(IMTList host, Object... acc) {
+            return acc[0] + ")";
+        }
+
+        public Object nonEmptyCase(INEList host, Object... acc) {
+            return host.getRest().execute(this, 
+                acc[0] + ", " + host.getFirst());
+        }
+    }; // PAY ATTENTION TO THE SEMI-COLON HERE!</code></entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>
+                <code id="id45767831" display="block">private final static IMTList MTSingleton = new IMTList (){
+        public Object execute(IListAlgo algo, Object... inp) {
+            return algo.emptyCase(this, inp);
+        }
+
+        public String toString() {
+            return "()";
+        }
+    }; // PAY ATTENTION TO THE SEMI-COLON HERE!</code></entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>
+                <code id="id45767868" display="block">public IMTList makeEmptyList() {
+        return MTSingleton;
+    }</code></entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>
+                <code id="id45767901" display="block">public INEList makeNEList(final Object first, 
+                          final IList rest) {
+        return new INEList() {
+            public Object getFirst() {
+                return first;
+            }
+		
+            public IList getRest() {
+                return rest;
+            }
+
+            public Object execute(IListAlgo algo, 
+                                  Object... inp) {
+                return algo.nonEmptyCase(this, inp);
+            }
+
+            public String toString() {
+                return (String)rest.execute(ToStrHelp, 
+                                            "(" + first);
+            }
+        };
+    }
+}</code></entry>
+              <entry>Note how the code inside the anonymous inner class references first and rest of the parameter list. <code>first</code> and <code>rest</code> are said to be in the <term>closure</term> of the anonymous inner class. <emphasis>Here is an important Java syntax rule:</emphasis> For an local inner class defined inside of a method to access a <emphasis>local</emphasis> variable of the method, this local variable must be declared as <code>final</code>.</entry>
+            </row>
+            <row>
+              <entry namest="c1" nameend="c2"> </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table><para id="id4690188"><link resource="listFW.zip">Click here to download the code of all of the above</link>.</para>
+    </section>
+    <section id="id-866142457168">
+      <title>5. Classes defined inside of another Class</title>
+      <para id="id5448682">Besides fields and methods, a Java class can also contain other classes.  And just like a field or method defined inside of a class, a class defined inside of another class can be static or non-static. Here is the syntax.</para>
+      <para id="id4708762">
+        <code id="id45768067" display="block">class X {
+    // fields of X ...
+    // methods of X ...
+    /**
+     * named class Y defined inside of class X:
+     */
+    [public|protected|private][static][final][abstract] class Y [extends A][implements B] {
+        // fields of Y ...
+        // methods of Y ...
+        // classes of Y ...
+    }
+}</code></para>
+      <section id="id-616079412759">
+        <title>Scope Specifier</title>
+        <para id="id8208172">When an embedded class is defined as <code>static</code>, it is called a <term>nested class</term>. <emphasis>The </emphasis><term>members</term><emphasis> (i.e. fields, methods, classes) of a (static) nested class can access only static members of the enclosing class.</emphasis></para>
+        <para id="id6910751">When an embedded class is non-<code>static</code>, it is called an <term>inner class</term>. The members of an inner class can access ALL members of the enclosing class. The enclosing class (and its enclosing class, if any, and so on) contains the environment that completely defines the inner class and constitutes what is called the <term>closure</term> of the inner class.  As all functional programmers should know, closure is a powerful concept.  One of the greatest strength in the Java programming language is the capability to express closures via classes with inner classes. We shall see many examples that will illustrate this powerful concept in other modules.<!-- TODO: Insert links to other modules here, by name --></para>
+        <para id="id4548692">Inner classes do not have to be anonymous as shown in the above examples.  They can be named as well.</para>
+      </section>
+      <section id="id-805213967457">
+        <title>Access Specifier</title>
+        <para id="id8192743">Just like any other class, a class defined inside of another class can be <term>public</term>, <term>protected</term>, <term>package</term> private, or <term>private</term>. </para>
+      </section>
+      <section id="id-511758457494">
+        <title>Extensibility Specifier</title>
+        <para id="id6540985">Just like a regular class, a <term>final</term>  nested/inner class cannot extended. </para>
+      </section>
+      <section id="id-149077771511">
+        <title>Abstract Specifier</title>
+        <para id="id6261888">Just like a regular class, an <term>abstract</term> nested/inner class cannot be instantiated. </para>
+      </section>
+      <section id="id-821124190241">
+        <title>Inheritance Specifier</title>
+        <para id="id7453616">Just like a regular class, an nested/inner can extend any non-final class and implement any number of interfaces that are within its scope. </para>
+      </section>
+      <section id="id-131480274141"><title>Usage</title><para id="id5427163"><emphasis>Nested</emphasis> classes are used mostly to avoid name clash and to promote and enforce information hiding.  For example the specialized double precision geometric point class, <code>Point2D.Double</code> is defined as an nested class of <code>Point2D</code> which is in turn a nested class of <code>Point</code>. In such, it has access to all the functionality of its parent plus it avoids the name clash with the double precision number class, <code>Double</code></para>
+<para id="id7980941"><emphasis>Inner</emphasis> classes are used to create (at run-time) objects that have direct access to the internals of the outer object and perform complex tasks that simple methods cannot do. Most of the time, they are defined anonymously.  For examples, "<term>event listeners</term>" for Java GUI components are implemented as inner classes.  The dynamic behavior and versatility of these "listeners" cannot be achieved by the addition of a set of fixed methods to a GUI component.  We shall study Java event handling soon!</para>
+<para id="id7903736">An inner object can be thought as an extension of the outer object. </para>
+      </section></section>
+    <section id="id-444305176575"><title>6. Closure</title><para id="id5912581">In functional programming, the closure of a function (<term>lamdba</term>) consists of the function itself and an environment in which the function is well-defined.  In Java, a function is replaced by a class.  An inner class is only defined in the context of its outer object (and the outer object of the outer object, etc...).  An inner class together with its nested sequence of outer objects in which the inner class is well-defined is the equivalent of the notion of closure in functional programming.  Such a notion is extremely powerful.  Just like knowing how to effectively use lambda expressions and higher order functions is key to writing powerful functional programs in Scheme, effective usage of anonymous inner classes is key to writing powerful OO programs in Java.</para>
+      <para id="id6609555">Some important points to remember about closures and inner classes:</para>
+      <list id="id6283148" list-type="bulleted">
+        <item>An object's closure is defined at the time of its creation. </item>
+        <item>An object "remembers" its closure for its entire lifetime.</item>
+        <item>An inner object's closure includes any local variables that are declared as <code>final</code>, plus all fields of the enclosing object, including <code>private</code> ones.</item>
+        <item>Every time a factory method is run, where a new anonymous object is created, a new closure for that object is created. This is because the local variables could change between calls.</item>
+        <item>Closures enable decoupled communication because an inner class can communicate with its outer class through its closure.</item>
+      </list>
+      <para id="id5369070">One of the most important ways in which we will use anonymous inner classes it to take advantage of their closure properties. Anonymous inner classes are the only objects in Java that can be instantiated in such a manner that the variables in their environments (closures) can be dynamically defined. That is, since an anonymous inner class can reference a local variable (that is declared <code>final</code>) and since local variables are created every time a method is called, then every the anonymous inner class object created has a different set of dynamically created variables that it is referencing. This means that we can make unique objects with unique behaviors at run time.</para>
+      <para id="id6273057">Factories are a natural partner with anonymous inner classes. With a factory that returns anonymous inner classes, we can instantiate unique objects with unique behaviors. If the factory method takes in parameters, there local variables can be used to alter the resultant object's behavior, a process called "<link url="http://en.wikipedia.org/wiki/Currying">currying</link>" (named after the famous mathematician/computer scientist <link url="http://www.haskell.org/bio.html">Haskell Curry</link>). The objects made by the factory are then sent off to various odd and sundry different parts of our OO system but all the while retaining their closures, which were determined at the time of their instantiation. Thus they retain the ability to communicate back to the factory that made them even though they are being used in another part of the system that knows nothing about the factory. We like to call these "<term>spy objects</term>" because they act like spies from the factory. This gives us powerful communications even though the system is decoupled.</para>
+      <para id="id8051760">This is the last piece of our abstraction puzzle! We have</para>
+      <list id="id8259091" list-type="enumerated">
+        <item><term>Abstract Structure</term> -- abstract classes, interfaces</item>
+        <item><term>Abstract Behavior</term> -- abstract methods, strategies, visitors.</item>
+        <item><term>Abstract Construction</term> -- factories</item>
+        <item><term>Abstract Environments</term> -- anonymous inner classes, closures.</item>
+      </list>
+      
+      <para id="id6219184"> </para>
+      <section id="id-0884281983886"><title>Examples</title><para id="id6457165"><title>Example 1: Reversing a list using factory and anonymous inner class helper</title>Write <code>Reverse</code> such that it takes one parameter, the <code>IListFactory</code>, but such that its helper only takes one parameter (other than the host list) which is the accumulated list.</para>
+
+<para id="id8138245">
+          <code id="id45768858" display="block">
+public class Reverse implements IListAlgo {
+  
+    public static final Reverse Singleton = new Reverse();
+  
+    private Reverse() {}
+  
+    public Object emptyCase(IMTList host0, Object... fac) {
+        return ((IListFactory)fac[0]).makeEmptyList();
+    }
+  
+    public Object nonEmptyCase(INEList host0, Object... fac) {
+        final IListFactory f = (IListFactory) fac[0];  // final so that the anon. inner 
+                                                       // class can access it.
+    
+        return host0.getRest().execute(new IListAlgo() {
+            
+            public Object emptyCase(IMTList host1, Object... acc) {
+                return acc[0];
+            }
+      
+            public Object nonEmptyCase(INEList host1, Object... acc) {
+                return host1.getRest().execute(this, 
+                    f.makeNEList(host1.getFirst(), (IList) acc[0]));
+            }
+        },f.makeNEList(host0.getFirst(), f.makeEmptyList()));                             
+    }
+}</code></para>
+<para id="id6644135"><title>Example 2: Ant World</title>Imagine a world of ants that live in a one-dimensional space. A queen ant can make a bunch of worker ants.  Each time she gives birth to a worker ant, she gives it a name.  A worker ant can always tell what its name is.  A worker ant from a particular colony can always calculate its distance from its queen.  A worker ant can also move its queen to a different location.  Wherever the queen moves to, ALL of her workers always know their relative distance from her. We want to keep track of all the ants in our ant world and all the ants in each of the existing colonies.  We want to model the fact that each queen produces its own worker ants, each one which can move its queen around without telling the other ants in the same colony, yet ALL of the ants in the same colony would know where their queen is.</para>
+          <para id="id4971785">The above can be modeled by a Queen class with an abstract Worker inner class as shown below.  This example illustrates the differences between static and non-static fields, methods and embedded classes. </para>
+          <code id="Queen.java" display="block"><title>Queen.java</title>
+/**
+ * Models ants living in a 1-dimensional world
+ *
+ *
+ * The Worker inner objects have direct access to the location of its outer
+ * Queen object.
+ *
+ * @author A.L. Cox
+ * @author D.X. Nguyen
+ * @author S.B. Wong
+ * @since 02/07/2003
+ */
+public class Queen {
+    /**
+     * The total number of ants (queens and workers for all the queens) that
+     * currently exist in our ant world.
+     *
+     * Why is this field static?
+     */
+    private static int _ants;
+
+    /**
+     * The location of this Queen object with respect to 0.
+     *
+     * Why is this field non-static?
+     */
+    private int _origin;
+
+    /**
+     * The total numbers of living worker ants produced by this Queen object.
+     *
+     * Why is this field non-static?
+     */
+    private int _workers;
+
+    /**
+     * Is part of a Queen instance, just like the origin field and the
+     * makeWorker() method are parts of a Queen instance.
+     * Any concrete implementation of Worker must implement the getName()
+     * method to return the name given by its Queen at birth time.
+     *
+     * Why can't this class be static?
+     */
+    public abstract class Worker {
+
+        /**
+         * The location of this Worker object.
+         */
+        private int _location;
+
+        /**
+         * Increments _ants and _workers because every time a Worker is
+         * instantiated, a new ant is added to our ant world, a new worker ant
+         * is added to the colony of this outer Queen object.
+         * @param loc the starting location of this Worker object.
+         */
+        public Worker(int loc) {
+            _location = loc;
+        _ants++;            // The worker is an ant.
+        _workers++;
+        }
+
+        /**
+         * @return the relative distance between this Worker and its outer Queen
+         * object.
+         */
+        public int calcDist() {
+           return _location - _origin;
+        }
+
+        /**
+        * The name will be given at birth.  The code cannot be written at
+        * this point and thus must be abstract.
+        * @return name of the worker
+        */
+        public abstract String getName();
+
+
+        /**
+        * Our worker has been stepped on!  (No one holds a reference
+        * to this object anymore.  It's being garbage collected.)
+        */
+        protected void finalize() {
+            _ants--;            // The worker is an ant.
+            _workers--;
+        }
+
+        /**
+         * Changes the location of this Worker object to a new location.
+         * @param loc the new location for this Worler object.
+         */
+        public void moveTo(int loc) {
+            _location = loc;
+        }
+
+        /**
+         * Changes the origin of the outer Queen object to a new location.
+         * @param org  the new origin for the outer Queen object.
+         */
+        public void moveQueen(int org) {
+            moveTo(org);
+            _origin = org;
+        }
+    }
+
+    /**
+     * Initializes the origin of this Queen object to a given location.
+     * Increments _ants since this new Queen object is an ant.
+     * @param org the starting origin of this Queen object.
+     */
+    public Queen(int org) {
+    _ants++;            // The queen is an ant.
+        _origin = org;
+    }
+
+    /**
+     * Return the total number of all ants, including all of the
+     * queens and their respective workers.
+     *
+     * Why is this method static?
+     * Can it be non-static?
+     */
+    public static int countAllAnts() {
+    return _ants;
+    }
+
+    /**
+     * @return the total number of workers that belong to this Queen object
+     *
+     * Why isn't this method static?
+     */
+    public int countMyWorkers() {
+    return _workers;
+    }
+
+    /**
+     * Factory method: relegate the task of manufacturing concrete
+     * Worker objects to the Queen object because the Queen object
+     * intrinsically "knows" how to make its inner objects.
+     * @param name The name of the Worker.
+     */
+    public Worker makeWorker(final String name) {
+        // Anonymously create a Worker object by overriding getName().
+        return new Worker(_origin) {
+            public String getName() {
+                return name;  // requires the parameter name to be final.
+            }
+        };
+    }
+}
+            </code><section id="id-504116362246">
+          <title>Exercise: </title>
+          <para id="id3615437">Write a JUnit test program for the Queen and Worker classes. </para>
+        </section>
+      </section></section><section id="id-630841368481"><title>7. Changing "states" - progressing to non-functional programming</title><para id="id8326608">In the above Queen example, the locations of a <code>Queen</code> object and its <code>Worker</code> objects are subject to change.  Every time a <code>Worker</code> ant moves its <code>Queen</code>, it has the side effect of changing the <code>Queen</code>'s origin.  The <code>Queen</code> object remains the "same".  This seems like a reasonable thing to have.  In the functional programming paradigm, to move the <code>Queen</code>, the <code>Worker</code> ant would have to instantiate a new <code>Queen</code> object with a new location and find a way to associate itself to this new <code>Queen</code>, which does not seem to model the "real" ant world very well.  By allowing our objects to change their internal states in appropriate situations, our programming model becomes more "realistic", more efficient, and in many cases "simpler".</para>
+        <para id="id8080000">To further illustrate the relevance of state changes, consider the problem of moving the minimum element of a list of integers to the front of the list.  Since the current <code>IList</code> model is immutable, we can only solve the problem by returning a copy of the original list with its minimum at the front.  Below is an algorithm to solve the problem that makes use of an accumulator to accumulate the current minimum and internally updates it as the list is being traversed. (Note: the list is assumed to hold no duplicate values).</para>
+		<code id="Min2Front.java" display="block"><title>Min2Front.java</title>public class Min2Front implements IListAlgo {
+
+    private Integer _accMin;  // accumulated min.
+    private IListFactory _fact;
+
+    public Min2Front(IListFactory f) {
+        _fact = f;
+    }
+
+    public Object emptyCase(IMTList mtHost, Object... nu) {
+        return mtHost;
+    }
+
+    public Object nonEmptyCase(INEList neHost, Object... nu) {
+        // We assign _accMin the first of L as a candidate for minimum:
+        _accMin = (Integer)neHost.getFirst();
+        /**
+        * Let us consider the set S of all elements in L that precede L.
+        * S is clearly empty.  At this point we have established the following:
+        * _accMin is an element of L and is smaller than all elements of S.
+        * We now call on an anonymous helper to operate on L in order to find
+        * the minimum and remove it from L.  This helper will recursively
+        * travese L to the end in order to obtain the minimum, save it in
+        * _accMin and reconstruct the host list L without the minimum on its way
+        * back from the recursive list traversal.
+        */
+        IList withoutMin = (IList)neHost.execute(new IListAlgo() {
+            /**
+            * Note: when L executes this helper, this case is called since L is
+            * not empty.  Thus for the first call to this method, h is L.
+            * We update _accMin to ensure that it is an element of L and is the
+            * minimum of all elements in L that precedes the rest of the host
+            * parameter h.  Then we recursively call this helper on h.getRest()
+            * to save the minimum in _accMin and create a copy of h.getRest()
+            * that does not contain _accMin.
+            */
+            public Object nonEmptyCase(INEList h, Object... nu) {
+                if ((Integer)h.getFirst() &lt; accMin) {
+                    _accMin = first;
+                }
+                /**
+                * At this point, we have established the following invariant:
+                * _accMin is an element of L and is the minimum of all elements
+                * in L that precedes h.getRest().
+                */
+                IList accList = (IList)h.getRest().execute(this, null);
+                /**
+                * By induction, _accMin is now the minimum of the whole outer
+                * host list L, and accList is a copy of h.getRest() that does
+                * not contain _accMin.
+                */
+                if (!first.equals(_accMin)) {
+                    accList = _fact.makeNEList(first, accList);
+                }
+                // accList is now a copy of the host h without _accMin.
+                return accList;
+                /**
+                * As noted earlier, L.execute(...) calls nonEmptyCase() since
+                * L is not empty.  Thus the first call to nonEmptyCase() is the
+                * call with L as the value for the host parameter h.  So, when
+                * we return from this first call, accList is a copy of L without
+                * the minimum stored in _accMin.
+                */
+            }
+
+            /**
+            * This method is only called from inside of the nonEmptyCase()
+            * method.  The empty host parameter h marks the end of the outer
+            * host list L.
+            * _accmin is thus the minimum. The empty list is thus a copy of
+            * the outer host list L from the current list (empty) to the end
+            * that does not contain _accMin.
+            */
+            public Object emptyCase(IMTList h, Object... nu) {
+                return h;
+            }
+        }, null);  // NOTE that the input argument is null since the helper does
+                   // not need it.
+        /**
+        * "Cons" the minimum to the front of the copy of the host that does not
+        *  contain this minimum.
+        */
+        return _fact.makeNEList(_accMin, withoutMin);
+    }
+}
+		  </code><para id="id3535728">In the above, the comments are longer than the code.  The above code and comments can be greatly simplified if the list is mutable.  What does it mean for a list to be mutable?</para>
+      </section></content>
+</document>

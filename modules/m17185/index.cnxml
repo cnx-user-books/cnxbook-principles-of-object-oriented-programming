@@ -1,0 +1,259 @@
+<document xmlns="http://cnx.rice.edu/cnxml">
+  <title>Graphical User Interfaces in Java</title>
+  <metadata xmlns:md="http://cnx.rice.edu/mdml">
+  <md:content-id>m17185</md:content-id>
+  <md:title>Graphical User Interfaces in Java</md:title>
+  <md:abstract>Demonstrates the basics of Java GUI programming, and the design patterns involved therein.</md:abstract>
+  <md:uuid>5d8726e7-7b02-42b5-92a6-d7d599cab76b</md:uuid>
+</metadata>
+
+<content>
+    <section id="id-626761312682">
+      <title>Graphical User Interfaces in Java</title>
+      <para id="id9898380">In Java <term>Graphical User Interface</term> (<term>GUI</term>) programming, we do not build GUI components from scratch. Instead we use GUI components provided to us by the JDK.  Java has two types of GUI applications: stand-alone GUI applications and <term>applets</term>.  We first study how to build stand-alone GUI applications (GUI app for short). </para>
+      <para id="id10742780">Every GUI app uses what is called a <code>JFrame</code> that comes with the JDK.  A <code>JFrame</code> is a window with borders, a title bar, and buttons for closing and maximizing or minimizing itself.  It also knows how to resize itself.  Every GUI app subclasses <code>JFrame</code> in some way to add more functionality to the window frame.  One common task is to tell the system to terminate all "threads" of the GUI app when the user clicks on the exit (close) button of the main GUI window.  We encapsulate this task in an abstract frame class called <code>AFrame</code> described below.</para>
+    </section>
+    <section id="id-258106334257">
+      <title>0. Abstract Frame (AFrame.java)</title>
+      <note id="id6802408">The source code for <code>AFrame</code> is available at the end of this section.</note><section id="id-964372307">
+        <title>Event</title>
+        <para id="id3307588">When the user interacts with a GUI component such as clicking on it or holding the mouse down on it and drag the mouse around, the Java Virtual Machine (JVM) fires appropriate "events" and delivers them to the GUI component.  It is up to the GUI component to respond to an event.  The abstract notion of events is encapsulated in an abstract class called <code>AWTEvent</code> provided by Java.  Specific concrete events are represented by appropriate concrete subclasses of <code>AWTEvent</code>.</para>
+        <para id="id10730244">For example, when the user clicks on the close button of a <code>JFrame</code>, the JVM fires a window event represented by the class <code>WindowEvent</code> and delivers it to the <code>JFrame</code>.  By default, the <code>JFrame</code> simply hides itself from the screen while everything else that was created and running before the <code>JFrame</code> disappears from the screen is still alive and running!  There is no way the user can redisplay the frame again.  In the case when the <code>JFrame</code> is the main window of a GUI app, we should terminate everything when this main frame is closed.  The best way to ensure this action is to "register" a special window event "listener" with the <code>JFrame</code> that will call the System class to terminate all threads related to the current program and exit the program.  The code looks something like this:</para>
+        <para id="id10605705">
+          <code id="id6801818" display="block">
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                System.exit(0);
+            }
+        });
+		  </code>
+        </para>
+        <para id="id7343300">Every time we write the constructor for a main frame of a GUI app, we <emphasis>invariably</emphasis> find ourselves writing the above lines of code to exit the program plus some additional application specific code to initialize the frame.  So, instead of "copy-and-paste" the above code ("opportunistic" re-use), we capture this <emphasis>invariant</emphasis> task in the constructor of an abstract class called <code>AFrame</code> and reuse the code by subclassing from it.  The application specific code to initialize the main frame is relegated to the specific concrete subclass of <code>AFrame</code> and is represented by an abstract method called <code>initialize()</code>.  The constructor for <code>AFrame</code> calls <code>initialize()</code>, which, at run-time, is the concrete initialization code of the concrete subclass of <code>AFrame</code> that is being instantiated, as shown below.</para><para id="id8479548">
+          <code id="id6135622" display="block">
+    public AFrame(String title) {
+        // Always call the superclass's constructor:
+        super(title);
+
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                System.exit(0);
+            }
+        });
+
+        initialize();
+    }
+		  </code>
+		  <note id="id6812207">See the full code listing at the end of this section for more information</note></para>
+      </section>
+      <section id="id-736302567663">
+        <title>Template Method Pattern: Expressing Invariant Behavior in terms of Variant Behaviors</title>
+        <note id="id6756986">The code for the classes <code>AFrame</code>, <code>FrameA</code>, <code>FrameAB</code>,
+          and <code>FrameAC</code> are available at the end of this section.
+        </note><para id="id11424262">The code for <code>AFrame</code> is an example of what is called the <link document="m17188">Template Method Pattern</link>.  This design pattern is used to expresses an <term>invariant</term> and concrete behavior that consists of calls to one or more <emphasis>abstract</emphasis> methods. An abstract method represents a <emphasis>variant</emphasis> behavior.  In other words, the template design pattern is a means to express an invariant behavior in terms of variant behaviors.  We shall see this pattern used again in expressing sorting algorithms.</para><section id="id-686906203982">
+          <title>Caveat</title>
+          <para id="id6374224">As stated earlier, the call to <code>initialize()</code> in the constructor of <code>AFrame</code> will only invoke the concrete <code>initialize()</code> method of the concrete descendant class of <code>AFrame</code> that is being instantiated.  Because <code>initialize()</code> is polymorphic, care must taken to ensure proper initialization of descendant classes that are more than one level deep in the inheritance hierarchy of <code>AFrame</code>.  Consider the following inheritance tree as illustrated by the following UML class diagram.  </para><figure id="id8593088"><media id="id6459280" alt=""><image src="../../media/graphics1-d35f.png" mime-type="image/png"/></media></figure>
+          <para id="id6756262">In overriding the <code>initialize()</code> method of <code>FrameA</code>, a direct subclass of <code>AFrame</code>, we should not invoke the <code>initialize()</code> method of the superclass <code>AFrame</code> via the call <code>super.initialize()</code> because <code>super.initialize()</code> is abstract. However, the <code>initialize()</code> method of any subclass of <code>FrameA</code> and below should make a call to the initialize() method of its direct superclass in order to ensure proper initialization.  For example, in the above diagram, <code>new FrameAB("ab")</code> calls the constructor <code>FrameAB</code>, which calls the constructor <code>FrameA</code>, which calls the constructor <code>AFrame</code>, which calls</para><list id="id10367482" list-type="bulleted">
+            <item>the constructor <code>JFrame</code> and then calls </item>
+            <item><code>initialize()</code>, which is the <code>initialize()</code> method of <code>FrameAB</code> which calls 
+              <list id="id3785292" list-type="bulleted">
+                <item><code>super.initialize()</code>, which should properly initialize <code>FrameA</code>, and then calls </item>
+                <item>the additional initialization code for <code>FrameAB</code>. </item>
+              </list>
+            </item>
+          </list>
+          <exercise id="frameACChain">
+            <problem id="id1075922"><para id="bsid32">What is the chain of calls when we instantiate a <code>FrameAC</code>?</para></problem>
+          </exercise>
+        </section>
+      </section><section id="eip-532"><title>Source code for the above frame classes</title><code id="id6887495" display="block">
+<title>AFrame.java</title>
+package view;
+
+import javax.swing.*;  // to use JFrame.
+
+/**
+ * Minimal reusable code to create a JFrame with a title and a window event
+ * listener to call on System.exit() and force termination of the main
+ * application that creates this JFrame.
+ * @author D.X. Nguyen
+ */
+public abstract class AFrame extends JFrame {
+
+    public AFrame(String title) {
+        // Always call the superclass's constuctor:
+        super(title);
+
+        /**
+        * Add an anonymous WindowAdapter event handler to call System.exit to
+        * force termination of the main application when the Frame closes.
+        * Without it, the main application will still be running even after
+        * the frame is closed.
+        * For illustration purpose, we use the full package name for
+        * WindowAdpater and WindowEvent.
+        * We could have imported java.awt.event.* and avoid using the full
+        * package names.
+        */
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                System.out.println(e);  // For illustration purpose only.
+                System.exit(0);
+            }
+        });
+
+        /**
+        * Subclasses are to do whatever is necessary to initialize the frame.
+        * CAVEAT: At run-time, when a concrete descendant class of AFrame is
+        * created, only the (concrete) initialize() method of this descendant
+        * class is called.
+        */
+        initialize();
+    }
+
+    /**
+     * Relegates to subclasses the responsibility to initialize the system to
+     * a well-defined state.
+     */
+    protected abstract void initialize();
+}
+        </code>
+
+<code id="id6719820" display="block">
+<title>FrameA.java</title>
+package view;
+
+/**
+ * A direct concrete subclass of AFrame with its own initializaion code.
+ */
+public class FrameA extends AFrame {
+
+    /**
+     * Calls AFrame constructor, which calls the cocnrete inititialize() method
+     * of this FrameA.  This is done dynamically at run-time when a FrameA
+     * object is instantiated.
+     */
+    public FrameA(String title) {
+        super(title);
+    }
+
+    /**
+     * The superclass initialize() method is abstract: don't call it here!
+     * Just write application specific initialization code for this FrameA here.
+     */
+    protected void initialize() {
+        // Application specific intialization code for FrameA goes here...
+    }
+}
+        </code>
+
+<code id="id6624930" display="block">
+<title>FrameAB.java</title>
+package view;
+
+/**
+ * A second level descendant class of AFrame
+ * that initializes itself by calling the
+ * initialize() method of its direct superclass
+ * in addition to its own initialization code.
+ */
+public class FrameAB extends FrameA {
+
+  /**
+  * Calls the superclass constructor, FrameA,
+  * which in turns calls its superclass constructor,
+  * AFrame, which first calls its superclass
+  * constructor, JFrame, and then executes the
+  * initialize() method of this FrameAB.
+  */
+  public FrameAB(String title) {
+    super(title);
+  }
+
+  /**
+  * At run-time, when the constructor AFrame is
+  * executed, it calls this FrameAB initialize()
+  * method and NOT the initialize() method of the
+  * superclass FrameA.  In order to reuse the
+  * initialization code for FrameA, we must make
+  * the super call to initialize().
+  */
+  protected void initialize() {
+    // Call initialize() of FrameA:
+    super.initialize();
+
+    /**
+    * Additional application specific intialization
+    * code for FrameAB goes here...
+    */
+  }
+}
+        </code>
+
+<code id="id6838743" display="block">
+<title>FrameAC.java</title>
+package view;
+
+/**
+ * A second level descendant class of AFrame
+ * that bypasses the initialize() method of
+ * its direct superclass in its own
+ * initialization code.  Since proper
+ * initialization of a subclass depends on
+ * proper initialization of the super class,
+ * bypassing the initialization code of the
+ * superclass is a BAD idea!
+ */
+
+public class FrameAC extends FrameA {
+
+  /**
+  * Calls the superclass constructor, FrameA,
+  * which in turns calls its superclass constructor,
+  * AFrame, which first calls its superclass
+  * constructor, JFrame, and then executes the
+  * initialize() method of this FrameAC.
+  */
+  public FrameAC(String title) {
+    super(title);
+  }
+
+  /**
+  * At run-time, when the constructor AFrame is
+  * executed, it calls this initialize() method and
+  * NOT the initialize() method of the superclass
+  * FrameA.  This method does not call the super
+  * class's initialize() method. As a result, the
+  * initialization done in the superclass is
+  * bypassed completely.  This is a BAD idea!
+  */
+  protected void initialize() {
+    /**
+    * Application specific intialization code for
+    * FrameAC goes here...
+     */
+  }
+}
+        </code>
+
+</section></section>
+    <section id="id-540508002437">
+      <title>1. Simple JFrame (Frame0.java)</title>
+      <note id="id1073135">Frame0App.java is available in the source code <link resource="GUI1.zip">archive file</link>.</note>
+      <para id="id7842770"><code>Frame0App.java</code> represents one of the simplest GUI application in Java: it simply pops open an <code>Frame0</code> object.  <code>Frame0</code> is subclass of <code>AFrame</code> that does nothing in its concrete <code>initialize()</code> method.</para>
+    </section>
+    <section id="id-77815436433">
+      <title>2. JFrame with JButtons but no event handlers (Frame1.java)</title>
+      <note id="id5806180"><code>Frame1.java</code> is available in the source code <link resource="GUI1.zip">archive file</link>.</note><para id="id6966046">To display other GUI components on a <code>JFrame</code>, we first need to get the content pane of the <code>JFrame</code> and then add the desired GUI components to this content pane.</para>
+      <para id="id9629071">If we want to arrange the added GUI components in certain ways, we need to add an appropriate "<term>layout manager</term>" to the <code>JFrame</code>. The task of laying out the GUI component inside of a container GUI component is specified by an interface called <code>LayoutManager</code>. In Frame1, we add the <code>FlowLayout</code> that arranges all GUI components in a linear fashion. If we do not add any layout manager to the <code>JFrame</code>, it has no layout manager and does a very bad job of arranging GUI components inside of it. As an exercise, comment out the code to add the <code>FlowLayout</code> to Frame1 and see what happens!</para>
+      <section id="id-414007028535">
+        <title>Strategy Pattern</title>
+        <para id="id10662728"><code>JFrame</code> is not responsible for arranging the GUI components that it contains. Instead it delegates such a task to its layout manager, <code>LayoutManager</code>. There are many concrete layout managers: <code>FlowLayout</code>, <code>BorderLayout</code>, <code>GridLayout</code>, etc. that arrange the internal components differently. There are said to be different strategies for layout. The interaction between <code>JFrame</code> and its layout manager is said to follow the <link document="m17037">Strategy Pattern</link>.</para>
+        <para id="id10201843">The strategy pattern is powerful and important design pattern. It is based on that principle of delegation that we have been applying to model many of the problems so far. It is a mean to delineate the invariant behavior of the context (e.g. <code>JFrame</code>) and the variant behaviors of a union of algorithms to perform certain common abstract task (e.g. <code>LayoutManager</code>). We shall see more applications of the strategy design pattern in future lessons.</para>
+        <para id="id10377903">At this point the only the buttons in the <code>Frame1</code> example do not perform any task besides "blinking" when they are clicked upon. The example in the next lecture will show how to associate an action to the click event.</para>
+        <para id="id10302208">
+          <link resource="GUI1.zip">Click here to download code samples.</link>
+        </para>
+      </section>
+    </section>
+  </content>
+  
+</document>

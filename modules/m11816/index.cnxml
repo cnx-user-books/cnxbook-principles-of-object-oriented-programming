@@ -1,0 +1,181 @@
+<document xmlns="http://cnx.rice.edu/cnxml">
+	<title>Ballworld, composition-based</title>
+	<metadata xmlns:md="http://cnx.rice.edu/mdml">
+  <md:content-id>m11816</md:content-id>
+  <md:title>Ballworld, composition-based</md:title>
+  <md:abstract>The module uses the Ballworld program to demonstrate key ideas in abstract classes, polymorphism, inheritance and other coding techniques.  In particular, this module will contrast a composition-based architecture with an inheritance-based architecture.</md:abstract>
+  <md:uuid>f1feec78-df61-458b-be2b-918adf366ebe</md:uuid>
+</metadata>
+	<content>
+		<para id="p10">In this module we will explore what is gained by modifying the <link document="m11806">inheritance-based Ballworld system</link> into a composition-based system.  </para>
+		<para id="p20">In the inheritance-based Ballworld system, we were able to generate quite a bit of flexibility and extensibility.  For instance, we could develop new kinds of balls and add them into the system without recompiling the rest of the code.  This was accomplished by having the invariant ball creation and management code deal only with the abstract ball while the variant behaviors were encapsulated into the concrete subclasses.</para>
+		<section id="s10">
+			<title>The Problem with Inheritance</title>
+			<para id="s10p10">Inheritance seems to work quite well, but suppose we want to do more than just put different kinds of balls on the screen?   What if we wanted to be able to change how a ball behaves, <emphasis>after </emphasis>it has been created?   What if we want create balls that do a multiple of different behaviors, such as change color and radius?  While working solutions using an inheritance-based system do exist,  they are cumbersome, inefficient and most importantly, inconsistent with any sort of clear abstract model of what balls should be like. </para>
+			<para id="s10p20">The problem lies in the very nature of inheritance.  When we attempted to separate the variant from the invariant behaviors, we overlooked a crucial aspect of inheritance.   In our model, the superclass represented the invariant behaviors of a ball while the subclasses represented the variant behaviors.   The separation seemed clear enough in the UML diagram, except that when one has an actual object <emphasis>instance</emphasis>, <emphasis>both </emphasis>the superclass and subclass behaviors are bound into a <emphasis>single </emphasis>entity.   A ball <emphasis>object </emphasis>cannot change its variant  <code>updateState </code>behavior because it is inextricably bound with to the invariant behaviors.   A ball object cannot be composed of multiple <code>updateState </code>behaviors because that code cannot be isolated from the rest of the ball's code.   If you want a curving behavior, you have to get it packaged in a whole ball object--you can't get just the behavior.</para>
+			<para id="s10p30">A clear sympton of this problem is the common code to call the superclass constructor found in all the subclasses' constructors.   This tells us that the superclass is really right there in the subclass with everything else.   The fact that the code is repeated from class to class says that it is invariant code in the middle of what we want to be variant code.  <quote id="id1166354493764" display="block">The inheritance-based model of Ballworld does not separate the variant and the invariant at the proper place.  There is invariant code mixed together with the variant code. </quote>That's why they can't be separated and the invariant behaviors are dragged along with the variant behaviors.   This is what makes dynamically changing behaviors and multiply composed behaviors so difficult in this system.  </para>
+		</section>
+		<section id="s20">
+			<title>Pizzas and Shapes</title>
+			<para id="s20p10">To understand what we can do to remedy the problems with our inheritance-based model, let's digress for a bit and consider a simple model of pizzas.    Here, we have a pizza which has a price and <emphasis>has a</emphasis> shape.  A shape, be it a circle, square, rectangle of triangle, is capable of determining its own area.  A pizza, when requested to calculate its price per square inch, simply takes its price and divides it by the area of its shape.   To obtain that area, the <code>Pizza </code><term>delegates </term>to the <code>IShape</code>, since it is the shape that knows how to calculate its area, not the pizza. <figure id="s20p10f10">
+					<title>Pizzas and Shapes</title>
+					<media id="id1166342685094" alt=""><image src="../../media/pizza.png" mime-type="image/png"/></media>
+					<caption>A pizza <emphasis>has-a</emphasis> shape, which is able to calculate its area.</caption>
+				</figure>Delegation is the handing of a calculation off to another object for it process.   Here, the pizza is only interested in the result of the area calculation, not how it is performed. <quote id="id1166341272270" display="block"> To the pizza, the shape represents an abstract algorithm to calculate the area. </quote>  The <code>Pizza </code>and the <code>IShape </code>classes represent the invariant processes involved with calculating the price per square inch ration, while the concrete <code>Circle</code>, <code>Square</code>, <code>Triangle </code>and <code>Rectangle </code>classes represent the variant area calculations for different shapes. What wee see from this example is that <quote id="id1166343566414" display="block">objects can be used to represent pure behavior, not just tangible entities. </quote>Interfaces are particularly useful here as  they are expressly designed to represent pure, abstract behavior. </para>
+		</section>
+		<section id="s30">
+			<title>From Inheritance to Composition</title>
+			<para id="s30p10">Coming back to Ballworld, we see that the <code>updateState </code>method in <code>ABall </code>is an abstract algorithm to update the state of the ball.   So, just as in the pizza example, we can represent this algorithm, <emphasis>and just this algorithm</emphasis>, as an object.   We can say that a ball <emphasis>has an</emphasis> algorithm to update its state.  Another wa of saying this is to say that the ball has a <emphasis>strategy </emphasis>to update its state.  We can represent this by using composition.   Instead of having an abstract method to update the state,  we model a ball as having a reference to an <code>IUpdateStrategy </code>object.   The code for update thus becomes <code id="id1166344899879" display="block">
+  	public void update(Observable o, Object g)
+  	{
+    		_strategy.updateState(this);   // update this ball's state using the strategy
+    	 	location.translate (velocity.x, velocity.y);  // move the ball
+    		bounce();  // bounce the ball off the wall if necessary
+    		paint((Graphics) g); // paint the ball onto the container
+ 	 }</code>The ball hands a reference to itself, <code>this</code>, to the strategy so that the strategy knows which ball to update.  The variant updating behaviors are now represented by concrete implementations of the <code>IUpdateStrategy </code>interface. <figure id="s30f10">
+					<title>Composition-based Ballworld</title>
+					<media id="id1166342303374" alt=""><image src="../../media/uml-373d.png" mime-type="image/png"/></media>
+					<caption><code>Ball </code>is now a concrete class and its subclasses have been eliminated in favor of being composed with an abstract strategy.</caption>
+				</figure>(Note that the <code>Randomizer </code>class has been redesigned to eliminate its static methods. One new method has been added as well.)</para>
+			<para id="s30p20">There are a number of very important points to notice about this new formulation:  <list id="s30p20l10">
+					<item>The modified <code>ABall </code>class now contains 100% concrete code and thus should not be abstract anymore.   <list id="s30p20l10l10">
+							<item><code>ABall </code>has been renamed to simply <code>Ball</code>.</item>
+							<item>Accessor methods for the strategy  (<code>getStrategy </code>and <code>setStrategy</code>) have been added.</item>
+							<item><emphasis>The <code>Ball </code>class is still 100% invariant code.</emphasis></item>
+						</list></item>
+					<item>The <code>CurveBall</code>, <code>StraightBall</code>, etc. subclasses are no longer needed as their variant behaviors have been moved to the <code>IUpdateStrategy </code>subclasses.<list id="s30p20l10l20">
+							<item>Effectively what has happened is that the <code>updateState </code>method has been moved from the <code>ABall </code>subclasses and embodied into their own classes. </item>
+							<item>The <code>IUpdateStrategy </code>subclasses do not inherit anything from <code>Ball</code>, hence they do not contain any invariant code.</item>
+							<item><emphasis>The strategies are thus 100% variant code.</emphasis></item>
+						</list></item>
+					<item>The reference to the ball during the updating process has gone from a peristent communication link (implicitly, <code>this</code>), to a transient communication link (<code>host</code>).</item>
+					<item>This composition-based model divides the code exactly between the variant and invariant behaviors--this is the key to the power and flexibility it generates.</item>
+				</list></para>
+			<para id="s30p30">This new composition-based model of Ballworld is an example of the <link url="http://www.exciton.cs.rice.edu/JavaResources/DesignPatterns/StrategyPattern.htm">Strategy Design Pattern</link>.  The strategy design pattern allows us to isolate variant behaviors on a much finer level than simple inheritance models.  <!-- Insert module text here --></para>
+			<section id="s40">
+				<title>Composing Behaviors</title>
+				<para id="s40p10">So far, all of our redesigning has resulted in a system that behaves exactly as it did when we started.   But what one finds very often in developing systems is that in order to make two steps forward, one must first make one step backwards in order to fundmentally change the direction in which they are going.    So, even though it looks like our system has not progressed because it still does exactly the same thing, we are indeed in a very different position, architecturally.   By freeing the variant behaviors from the invariant ones, we have generated a tremendous amount of flexibility.</para>
+				<section id="s50">
+					<title>Balls that change their strategies</title>
+					<para id="s50p10">Let's consider a the notion of a ball that changes its behavior.   Since we have modeled  a ball as <emphasis>having </emphasis>a strategy, we can simply say that in some manner, it is the ball's <emphasis>strategy </emphasis>that changes.   We could say that the ball changes its strategy, but since the ball doesn't know which strategy it has to begin with, it really doesn't know one strategy from another.  One could argue that it therefore can't know when or if it should ever change its strategy.   Therefore, the ball cannot be coded to change its own strategy!  So, whose baliwick is the changing of the strategy?    </para>
+					<para id="s50p20">Since the changing of a strategy is a strategy for updating the ball, it is the strategy that determines the change.   The strategy changes the strategy!  Let's consider the following strategy:<code id="id1166338190414" display="block">
+	package ballworld;
+	import java.awt.*;
+
+	public class Change1Strategy implements IUpdateStrategy {
+
+  		private int i = 500;  // initial value for i
+  
+  		public void updateState(Ball context) {
+    			if(i==0) context.setStrategy(new CurveStrategy());   // change strategy if i reaches zero
+    			else i--;  // not yet zero, so decrement i
+  		}
+	}
+</code>This strategy acts just like a <code>StraightStrategy </code>for 500 updates and then it tells the ball (its <code>context</code>) to switch to a <code>CurveStrategy</code>.  Once the <code>CurveStrategy </code>is installed, the ball becomes curving, without the need for any sort of conditionals to decide what it should do.   The context ball fundamentally and permanently <emphasis>becomes </emphasis>curving.  <exercise id="s50e10">
+							<problem id="id1166352999377">
+								<para id="s50e10p10">What would happen if you had two strategies like the one above, but instead of replacing themselves with <code>CurveStrategy</code>'s , they instead instantiated each other?</para>
+							</problem>
+							<solution id="id8324099">
+								<para id="s50e10p20">Try it!</para>
+							</solution>
+						</exercise></para>
+					<para id="s50p30">A key notion above is that a strategy can contain another strategy.  In the above example, the <code>Change1Strategy </code>could have easily pre-instantiated the <code>CurveStrategy </code>and saved it in a field for use when it was needed.  But the does it matter exactly which concrete strategy is being used?   If not, why not work at a higher abstraction level and let one strategy hold a reference to an <emphasis>abstract </emphasis>strategy?  For instance, consider the following code:  <code id="id8327064" display="block">
+	package ballworld;
+	import java.awt.*;
+
+	public class SwitcherStrategy implements IUpdateStrategy {
+  
+  		private IUpdateStrategy _strategy = new StraightStrategy();
+  
+  		public void updateState(Ball context) {
+    			_strategy.updateState(context);
+  		}
+  
+  		public void setStrategy(IUpdateStrategy newStrategy) {
+    			_strategy = newStrategy;
+  		}
+	}
+</code>This strategy doesn't look like it does much, but looks are deceiving.  All the <code>SwitcherStrategy </code>does is to delegate the <code>updateState </code>method to the <code>_strategy </code>that it holds.   This does not seem much in of itself, but consider the fact that the <code>SwitcherStrategy </code>also has a settor method for <code>_strategy</code>.   This means that the strategy held can be changed at run time!  More importantly, suppose a ball is instantiated with a <code>SwitcherStrategy</code>.  The behavior of the ball would be that of whatever strategy is being held by the <code>SwitcherStrategy </code>since the switcher just delegates to the held strategy.   If one were to have a reference to that <code>SwitcherStrategy </code>instance from somewhere else, one could then change the internal strategy.   The ball is none the wiser because all it has is a reference to the <code>SwitcherStrategy </code>instance, which hasn't changed at all!    However, since the held strategy is now different, the ball's <emphasis>behavior </emphasis>has completely changed!   This is an example of the <link url="http://www.exciton.cs.rice.edu/JavaResources/DesignPatterns/DecoratorPattern.htm">Decorator Design Pattern</link>, where the <code>SwitcherStrategy </code>class is formally called the <term>decorator </term>and the held strategy is formally called the <term>decoree</term>.  In theoretical terms, the decorator is what is known as an <term>indirection layer</term>, which is like a buffer between two enities that enables them to depend on each other but yet still be free to move and change with respect to each other.   A very useful analogy for indirection layers is like the thin layer of oil that will enable two sheets of metal to slide easily past each other.</para>
+				</section>
+				<section id="s60">
+					<title>Balls with multiple, composite behaviors</title>
+					<para id="s60p10">Now that we can dynamically change a ball's behavior, let's tackle another problem:  <exercise id="s60e10">
+							<problem id="id1166341059608">
+								<para id="s60e10p10">How can we have balls with multiple behaviors but yet not duplicate code for each one of those behaviors? </para>
+							</problem>
+							<solution id="id1166341467145">
+								<para id="s60e10p20">Use the same techniques as before:  strategies that hold strategies.</para>
+							</solution>
+						</exercise>Let's start with a very straightforward solution:<code id="id1166340969703" display="block">
+	package ballworld;
+	import java.awt.*;
+
+	public class DoubleStrategy implements IUpdateStrategy {
+  
+  		private IUpdateStrategy _s1 = new CurveStrategy();
+    		private IUpdateStrategy _s2 = new BreathingStrategy();
+  
+  		public void updateState(Ball context) {
+    			_s1.updateState(context);
+    			_s2.updateState(context);
+  		}
+  	}
+</code>Ta da!  No problem.  The <code>DoubleStrategy </code>simply holds two strategies and delegates to each of them in turn when asked to <code>updateState</code>.    So why stop here?<code id="id1166340970051" display="block">
+	package ballworld;
+	import java.awt.*;
+
+	public class TripleStrategy implements IUpdateStrategy {
+  
+  		private IUpdateStrategy _s1 = new CurveStrategy();
+    		private IUpdateStrategy _s2 = new BreathingStrategy();
+    		private IUpdateStrategy _s3 = new BreathingStrategy();
+ 
+  		public void updateState(Ball context) {
+    			_s1.updateState(context);
+    			_s2.updateState(context);
+    			_s3.updateState(context);
+  		}
+  	}
+</code>We're on a roll now!  We could go on and on, making as complex a strategy as we'd like, making a new class for each combination we want.   But somewhere around the 439'th combination, we get mightly tired of writing classes.   Isn't there an easier way? </para>
+					<para id="s60p20">Abstraction is the key here.   We want to write code that represents that abstraction of multiple, composite strategies.  Does what we were doing above depend on the particular concrete strategies that we were using?   No?  Then we should eliminate the concrete classes, raise the abstraction level and use the abstract superclass (interface) instead.   For a combination of two behaviors, we end up with the following: <code id="id1166342070135" display="block">
+	package ballworld;
+	import java.awt.*;
+
+	public class MultiStrategy implements IUpdateStrategy {
+
+  		private IUpdateStrategy _s1;
+  		private IUpdateStrategy _s2;
+
+  		public MultiStrategy(IUpdateStrategy s1, IUpdateStrategy s2) {
+    			_s1 = s1;
+    			_s2 = s2;
+  		}
+  
+  		public void updateState(Ball context) {
+    			_s1.updateState(context);
+    			_s2.updateState(context);
+  		}
+	}
+</code>Notice how we have added a constructor that enables us to initialize the two abstract strategy fields.  All we have to do is to construct a <code>MultiStrategy </code>object with the two desired strategies, and we're good to go!  </para>
+					<para id="s60p30"><exercise id="s60p30e10">
+							<problem id="id1166340329279">
+								<para id="s60p30e10p10">So if we want three behaviors, all we have to do is to make the same sort of thing but with 3 abstract strategy fields, right?  </para>
+							</problem>
+							<solution id="id1166341642612">
+								<para id="s60p30e10p20">But isn't a <code>MultiStrategy </code>an <code>IUpdateStrategy</code> iteself?   That is, since a <code>MultiStrategy </code>holds <code>IUpdateStrategy</code>'s, couldn't a <code>Multistrategy </code>hold a <code>Multistrategy </code>, which is holding a <code>Multistrategy </code>(or two) which is hold a <code>Multistrategy </code>, which is holding.....?   </para>
+							</solution>
+						</exercise><emphasis>Thus, with just a <code>Multistrategy </code> we are capable of composing arbitrarily complex behaviors! </emphasis></para>
+				</section>
+				<section id="s70">
+					<title>Composite Patterns</title>
+					<para id="s70p10">So what have we wrought here?  Let's take a look at the UML diagram of our to most abstract strategies.<figure id="s70p10f10">
+							<title>SwitcherStrategy and MultiStrategy</title>
+							<media id="id8863680" alt=""><image src="../../media/strategy.png" mime-type="image/png"/></media>
+							<caption>Note that the subclasses hold references to their own superclasses!</caption>
+						</figure></para>
+					<para id="s60p40">The key to the power that lies in the <code>SwitcherStrategy </code>and the <code>MultiStrategy </code>lies in the fact that they hold references to their own superclass, <code>IUpdateStrategy</code>.   This is what enables them to be create any behavior they want, including combinations of behaviors and dynamic modifications of behaviors.   This self-referential class structure is  known as the <link url="http://www.exciton.cs.rice.edu/JavaResources/DesignPatterns/composite.htm">Composite Design Pattern</link> (The Decorator pattern can be considered to be specialized form of the Composite pattern).   The massive power, flexibility and extensiblility that this pattern generates warrants further, more formal study, which is where we're heading next.   Stay tuned!   </para>
+				</section>
+			</section>
+		</section>
+	</content>
+</document>

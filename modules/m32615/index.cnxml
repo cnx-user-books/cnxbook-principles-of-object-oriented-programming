@@ -1,0 +1,30 @@
+<document xmlns="http://cnx.rice.edu/cnxml">
+
+<title>Design Patterns Resources</title>
+<metadata xmlns:md="http://cnx.rice.edu/mdml">
+  <md:content-id>m32615</md:content-id>
+  <md:title>Design Patterns Resources</md:title>
+  <md:abstract>This module contains links to additional resources for Design Patterns in object-oriented programming.</md:abstract>
+  <md:uuid>d6074254-0de8-4dee-95b4-74fc244d6d63</md:uuid>
+</metadata>
+<featured-links>
+  <!-- WARNING! The 'featured-links' section is read only. Do not edit below.
+       Changes to the links section in the source will not be saved. -->
+    <link-group type="supplemental">
+      <link url="http://cnx.org/content/col10213/latest/" strength="3">Principles of Object-Oriented Programming</link>
+    </link-group>
+  <!-- WARNING! The 'featured-links' section is read only. Do not edit above.
+       Changes to the links section in the source will not be saved. -->
+</featured-links>
+<content>
+<section id="fs-id8032996">
+<title>Links</title>
+  <para id="delete_me"><title><link url="http://cnx.org/lenses/swong/design-patterns">Connexions lens on Design Patterns</link></title>This collection of modules covers most of the design patterns used in introductory and intermediate level object-oriented programming and design.  This lens was created as a resource for the CNX <link document="col10213">"Principles of Object-Oriented Design" course</link>.   The modules are separate from the course materials and contain reference and supplemental information.</para><para id="eip-463"><title><link url="http://www.bandgap.cs.rice.edu/personal/adrice_swong/public/WebPages/research/default.htm">Research papers by D. X. Nguyen and S. Wong</link></title>These are the research papers upon which much of the CNX <link document="col10213">"Principles of Object-Oriented Design" course</link> is based.   Some of the papers cover more advanced material however.   All of the papers are in Java.   </para>
+</section>
+<section id="eip-117"><title>Books</title><para id="eip-473">
+<title>Design Patterns, Elements Of Reusable Object-Oriented Software, by Gamma, Helm, Johnson, and Vlissides, Addison-Wesley, 1995. ISBN 0201633612 </title>
+This is the bible of the pattern community. It predates Java. The authors are affectionately referred to as the Gang of Four (GoF). All examples are written in C++ and/or Smalltalk. It can be hard to read if you are not familiar with these two languages, though the ideas are language independent. The "pattern language" used in this book also requires a lot of getting used to. We have learned so much from this book, and we are still reading it and learning from it. There is a version on CD-ROM which is cheaper (and perhaps, more versatile). We strongly recommend it, especially to any student considering further work in object-oriented programming. 
+</para><para id="eip-418"><title>Head First Design Patterns, First Edition, by Eric Freeman and Elizabeth Freeman, O'Reilly, 2004.  ISBN 0-596-00712-4</title>A very approachable, easy-reading book on design patterns for beginners that is written in Java.  highly recommended for anyone just starting out with design patterns.  </para></section>
+</content>
+
+</document>

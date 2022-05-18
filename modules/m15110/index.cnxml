@@ -1,0 +1,178 @@
+<document xmlns="http://cnx.rice.edu/cnxml">
+  <title>List Structure and the Interpreter Design Pattern</title>
+  <metadata xmlns:md="http://cnx.rice.edu/mdml">
+  <md:content-id>m15110</md:content-id>
+  <md:title>List Structure and the Interpreter Design Pattern</md:title>
+  <md:abstract>Operations of the composite list structure are implemented using the Interpreter Design Pattern.</md:abstract>
+  <md:uuid>b2c0e764-76e6-4135-bc86-7b305f7cbd71</md:uuid>
+</metadata>
+
+<content>
+    <section id="id-0590869770188">
+      <title>List Processing</title>
+      <para id="id12493901">In the previous lecture, we define what a list is and implement it using the composite design pattern.  This list structure is fully encapsulated and does not expose any of its internal components.  In order to manipulate such a list without having to make public its internals, we need to add methods to the structure.  This lecture discusses the structure of the algorithms on the list.</para>
+      <section id="id-248336033174">
+        <title>What can a list do?</title>
+        <section id="id-873728212842">
+          <title>Length of a list</title>
+          <para id="id16115233">Suppose we are given a list L and asked to find out how many elements it has.  What should we do?  The temptation here is to start thinking about "traversing" the list and keep a count as we go along, and when we encounter the "end" of the list, the count should be the number of elements in the list. But how do we know that that's the right answer?  In order to determine whether or not the result obtained by counting as one traverses the list from beginning to end is correct, we have to define what it means to be the number of elements in the list.  The number of elements in a list is an abstract notion, isn't it?  In order to define such a quantity, we need to go back to the definition of what a list is.</para>
+          <list id="id8560923" list-type="bulleted">
+            <item>A <emphasis>list</emphasis> is an <emphasis>abstract</emphasis> notion of a container structure.</item>
+            <item>An empty list is a <emphasis>list</emphasis> that has no element</item>
+            <item>A non-empty list is a <emphasis>list</emphasis> that has an element called first and a <emphasis>list</emphasis> called rest.</item>
+          </list>
+          <para id="id13392772">To define the notion of the number of elements in a list, we need to define what we mean by the number of elements in an empty list and what we mean by the number of elements in a non-empty list.</para>
+          <list id="id12995325" list-type="bulleted">
+            <item>The number of elements in a list is an abstract notion because the list is an abstract notion.</item>
+            <item>The number of elements of an empty list is 0.</item>
+            <item>The number of elements in a non-empty list that contains first and rest is 1 plus the number of elements in rest.</item>
+          </list>
+          <para id="id8230382">The definition of the number of elements in a list is thus recursive.  The recursive characteristic of this definition arises naturally from the recursive characteristic of the list structure.  What ever approach we use to compute the number of elements in a list, in order to prove correctness, we must show that the result satisfies the above definition.</para>
+          <para id="id13871404">Here is the code for the above computation.</para>
+          <table id="eip-777" summary="Abstract list"><title>Top-level abstract list definition</title>
+<tgroup cols="1"><tbody>
+  <row>
+    <entry><code id="eip-id1164859690579" display="block">
+package listFW;
+/**
+ * Represents the abstract list structure.
+ */
+public interface IList {
+    /**
+     * Abstract notion of the number of elements in this IList.
+     */
+    public int getLength();
+}
+</code></entry>
+  </row>
+</tbody>
+
+
+
+</tgroup>
+</table><table id="id14246923" summary="Concrete list implementations"><title>Concrete list implementations</title>
+<tgroup cols="2"><tbody>
+                <row>
+<entry>
+<code id="id1171623606172" display="block">
+package listFW;
+/**
+ * Represents empty lists.
+ */
+public class MTList implements IList {
+    /**
+     * The number of elements in an 
+     * empty list is zero.
+     */
+    public int getLength() {
+        return 0;
+    }
+}
+</code>
+</entry>
+<entry>
+<code id="id8506032" display="block">
+package listFW;
+/**
+ * Represents non-empty lists.
+ */
+public class NEList implements IList {
+   private Object _first;
+   private IList _rest;
+   // Constructor ommitted.
+
+   /**
+    * The number of elements in a non-empty 
+    * list is the number of elements of its 
+    * rest plus 1.
+    */
+   public int getLength() {
+       return 1 + _rest.getLength();
+   }
+}
+</code>
+</entry>
+                </row>
+              </tbody>
+            
+</tgroup>
+</table><para id="id13054281">The above coding pattern is an example of what is called the <term>interpreter design pattern</term>: we are interpreting the abstract behavior of a class (or interface) in each of the concrete subclasses (or implementations).   The composite pattern is a pattern to express the structure of a system, while the interpreter pattern is used to express the behaviors (i.e. methods) of the system.  The interpreter pattern is usually applied to coding methods in a composite structure.  In a later lecture, we shall see another way of expressing the behavior of a composite structure without having to add new methods and interpret them.</para>
+        </section>
+      </section>
+      <section id="id-637720131293">
+        <title>Code Template </title>
+        <para id="id2972989">Whenever we want the IList to perform a task, we add a method to IList and write appropriate concrete implementations in MTList and NEList.  The following table illustrates the code template for writing the concrete code in MTList and NEList. </para>
+        <table id="id4741186" summary=""><title>Interpreter Pattern coding template for lists</title><tgroup cols="2">
+            <colspec colnum="1" colname="c1"/>
+            <colspec colnum="2" colname="c2"/>
+            <tbody>
+              <row>
+                <entry namest="c1" nameend="c2">
+<code>interface IList </code>
+</entry>
+              </row>
+              <row>
+                <entry namest="c1" nameend="c2">
+<code id="id7504260" display="block">
+public abstract returnType methodName(param list); 
+// returnType may be 'void'
+</code>
+</entry>
+              </row>
+              <row>
+                <entry> 
+<code id="id8484022" display="block">
+MTList
+ // no data
+</code> 
+</entry>
+                <entry>
+<code id="id7780254" display="block">
+NEList  
+  Object _first;
+  IList _rest;
+</code>
+</entry>
+              </row>
+              <row>
+                <entry>
+<code id="id8771519" display="block">
+public returnType methodName(param list) { 
+/*
+This is in general the base case of a 
+recursive call.  Write the (non-recursive) 
+code to solve the problem.
+*/
+}
+</code>
+</entry>
+                <entry>
+<code id="id6529223" display="block">
+public returnType methodName(param list) { 
+/*
+This is in general a recursive method.
+The code here can refer to _first and 
+_rest, and all the methods in NEList
+When referencing _rest, one usually makes 
+the recursive call:
+_rest.methodName(appropriate parameters).
+*/
+} 
+</code>
+</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table><para id="id13976627"> </para>
+        <section id="id-620877509163">
+          <title>In Class Exercises (Role-Acting)</title>
+          <list id="id11252515" list-type="bulleted">
+            <item>Find a number in a list and return "Found it!" if the number is in the list otherwise return "Not found!"</item>
+            <item>Append a list B to a given list A and return a new list consisting of A and B concatenated together.</item>
+          </list>
+          <para id="id13268122"> </para>
+        </section>
+      </section>
+    </section>
+  </content>
+</document>

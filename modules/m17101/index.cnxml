@@ -1,0 +1,293 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:md="http://cnx.rice.edu/mdml">
+  <title>Restricted Access Containers</title>
+  <metadata><md:content-id>undefined</md:content-id><md:title/><md:uuid>1883b511-c2b8-4539-8217-a4b3de4e410c</md:uuid>
+</metadata>
+  <content>
+    <section id="id-216954663152">
+      <title>Introduction </title>
+      <para id="id4117012">Stacks and queues are examples of containers with special insertion and removal behaviors and a special access behavior.</para>
+      <para id="id3472176">Insertion and removal in a stack must be carried out in such a way that the last data inserted is the first one to be removed.   One can only retrieve and remove a data element from a stack by way of special access point called the "top".   Traditionally, the insertion and removal methods for a stack are called push and pop, respectively.  push inserts a data element at the top of the stack.  pop removes and returns the data element at the top of the stack.  A stack is used to model systems that exhibit <term>LIFO (Last In First Out)</term> insert/removal behavior. </para>
+      <para id="id4673674">Data insertion and removal in a queue must be carried out in such a way that  the first one to be inserted is the first one to be removed.   One can only retrieve and remove a data element from a queue by way of special access point called the "front".  Traditionally, the insertion and removal methods for a queue are called <term>enqueue</term> and <term>dequeue</term>, respectively.  enqueue inserts a data element at the "end" of the queue.  dequeue removes and returns the data element at the front of the queue.  A queue is used to model systems that exhibit <term>FIFO  (First In First Out)</term> insertion/removal behavior.  For example, one can model a movie ticket line by a queue.</para>
+      <para id="id4096084">We abstract the behaviors of special containers such as stacks and queues into an interface called <code>IRAContainer</code> specified as follows. </para>
+    </section>
+    <section id="id-374366381217">
+      <title>Restricted Access Containers </title>
+      
+      
+      <section id="element-391"><title>IRAContainer.java</title><code display="block" id="idp1755536">package rac;
+
+import listFW.*;
+/**
+ * Defines the interface for a restricted access container.
+ */
+public interface IRAContainer {
+    /**
+     * Empty the container.
+     * NOTE: This implies a state change.
+     * This behavior can be achieved by repeatedly removing elements from this IRAContainer.
+     * It is specified here as a convenience to the client.
+     */
+    public void clear();
+    /**
+     * Return TRUE if the container is empty; otherwise, return
+     * FALSE. 
+     */
+    public boolean isEmpty();
+    /**
+     * Return TRUE if the container is full; otherwise, return
+     * FALSE. 
+     */
+    public boolean isFull();
+    /**
+     * Return an immutable list of all elements in the container.
+     * @param fact for manufacturing an IList.
+     */
+    public IList elements(IListFactory fact);
+    /**
+     * Remove the next item from the container and return it.
+     * NOTE: This implies a state change.
+     * @throw an Exception if this IRAContainer is empty.
+     */
+    public Object get();
+    /**
+     * Add an item to the container.
+     * NOTE: This implies a state change.
+     * @param input the Object to be added to this IRAContainer.
+     * @throw an Exception if this IRAContainer is full.
+     */
+    public void put(Object input);
+    /**
+     * Return the next element in this IRAContainer withour removing it.
+     * @throw an Exception if this IRAContainer is empty.
+     */
+    public Object peek();
+}
+
+</code></section><list list-type="enumerated" id="id4170793">
+        <item>Restrict the users from seeing inside or working on the inside of the container. </item>
+        <item>Have simple put(data) and get() methods. Note the lack of specification of how the data goes in or comes out of the container. </item>
+        <item>However, a "policy" must exist that governs how data is added ("put") or removed ("get"). Examples: <list list-type="bulleted" id="id4000149"><item>First in/First out (FIFO) ("Queue") </item><item>Last in/First out (LIFO) ("Stack") </item><item>Retrieve by ranking ("Priority Queue") </item><item>Random retrieval </item></list></item>
+        <item>The policy is variant behavior --&gt; abstract it. <list id="id4040000" list-type="bulleted"><item>The behavior of the RAC is independent of exactly what the policy does. </item><item>The RAC delegates the actual adding ("put") work to the policy. </item><item>The RAC is only dependent on the existence of the policy, not what it does. </item><item>The policy is a "strategy" for adding data to the RAC. <link document="m17037">See the Strategy design pattern</link>. </item><item>Strategy pattern vs. <link document="m17047">State pattern</link> -- so alike, yet so different! </item></list></item>
+      </list>
+      <para id="id4863938">The manufacturing of specific restricted access containers with specific insertion strategy will be done by concrete implementations of the following abstract factory interface.</para>
+      <section id="element-253"><title>IRACFactory.java</title><code display="block" id="idm8389904">package rac;
+
+/**
+ * Abstract Factory to manufacture RACs.
+ */
+public interface IRACFactory {
+    /**
+     * Returns an empty IRAContainer.
+     */
+    public IRAContainer makeRAC();
+}
+ </code></section>
+      
+    </section>
+    <section id="id-264908547768">
+      <title>Examples</title>
+      <para id="id4601859">The following is an (abstract) implementation of <code>IRACFactory</code> using <code>LRStruct</code> as the underlining data structure.  By varying the insertion strategy, which is an IAlgo on the internal <code>LRStruct</code>, we obtain different types of RAC: stack, queue, random, etc.</para>
+      <figure id="id4865335"><media id="idp3557008" alt=""><image src="../../media/graphics1-539d.png" mime-type="image/png"/></media><caption>UML diagram of the abstract RAC and RAC factory definitions plus a few concrete RAC factories.</caption></figure>
+      <para id="id4048313">The source code for the following examples can be <link resource="rac.zip">downloaded at this link</link>.</para>
+      <section id="element-767"><title>ALRSRACFactory.java</title><code display="block" id="idm2434112">package rac;
+
+import listFW.*;
+import listFW.factory.*;
+import lrs.*;
+
+/**
+ * Implements a factory for restricted access containers.  These
+ * restricted access containers are implemented using an LRStruct to
+ * hold the data objects.
+ */
+public abstract class ALRSRACFactory implements IRACFactory {
+    /**
+     * Implements a general-purpose restricted access container using
+     * an LRStruct.  How? 
+     *
+     * The next item to remove is always at the front of the list of
+     * contained objects.  This is invariant!
+     *
+     * Insertion is, however, delegated to a strategy routine; and
+     * this strategy is provided to the container.  This strategy
+     * varies to implement the desired kind of container, e.g., queue
+     * vs. stack.
+     *
+     * This nested static class is protected so that classes derived from its
+     * factory can reuse it to create other kinds of restricted access
+     * container. 
+     */
+    protected static class LRSRAContainer implements IRAContainer {
+        private IAlgo _insertStrategy;
+        private LRStruct _lrs;
+
+        public LRSRAContainer(IAlgo strategy) {
+            _insertStrategy = strategy;
+            _lrs = new LRStruct();
+        }
+
+        /**
+         * Empty the container.
+         */
+        public void clear() {
+            _lrs = new LRStruct();
+        }
+        
+        /**
+         * Return TRUE if the container is empty; otherwise, return
+         * FALSE.
+         */
+        public boolean isEmpty() {
+            return (Boolean)_lrs.execute(CheckEmpty.Singleton);
+        }
+
+        /**
+         * Return TRUE if the container is full; otherwise, return
+         * FALSE. 
+         *
+         * This implementation can hold an arbitrary number of
+         * objects.  Thus, always return false.
+         */
+        public boolean isFull() {
+            return false;
+        }
+
+        /**
+         * Return an immutable list of all elements in the container.
+         */
+        public IList elements(final IListFactory fact) {
+            return (IList)_lrs.execute(new IAlgo() {               
+                public Object emptyCase(LRStruct host, Object... nu) {
+                    return fact.makeEmptyList();
+                }
+
+                public Object nonEmptyCase(LRStruct host, Object... nu) {
+                    return fact.makeNEList(host.getFirst(),
+                                           (IList)host.getRest().execute(this));
+                }
+            });
+        }
+
+        /**
+         * Remove the next item from the container and return it.
+         */
+        public Object get() {
+            return _lrs.removeFront();
+        }
+
+        /**
+         * Add an item to the container.
+         */
+        public void put(Object input) {
+            _lrs.execute(_insertStrategy, input);
+        }
+
+        public Object peek() {
+            return _lrs.getFirst();
+        }
+    }    
+}
+
+/**
+ * Package private class used by ALRSRACFactory to check for emptiness of its internal LRStruct.
+ */
+class CheckEmpty implements IAlgo {
+    public static final CheckEmpty Singleton= new CheckEmpty();
+    private CheckEmpty() {
+    }
+
+    public Object emptyCase(LRStruct host, Object... input) {
+        return Boolean.TRUE;
+    }
+
+    public Object nonEmptyCase(LRStruct host, Object... input) {
+        return Boolean.FALSE;
+    }
+}
+</code></section>
+      
+      
+      <section id="element-965"><title>LRSStackFactory.java </title><code display="block" id="idm9187152">
+package rac;
+
+import lrs.*;
+
+public class LRSStackFactory extends ALRSRACFactory {
+    /**
+     * Create a ``last-in, first-out'' (LIFO) container.
+     */
+    public IRAContainer makeRAC() {
+        return new LRSRAContainer(new IAlgo() {
+            public Object emptyCase(LRStruct host, Object... input) {
+                return host.insertFront(input[0]);
+            }
+
+            public Object nonEmptyCase(LRStruct host, Object... input) {
+                return host.insertFront(input[0]);
+            }
+        });
+    }
+}
+</code></section><section id="element-752"><title>LRSQueueFactory.java </title><code display="block" id="idm710992">
+package rac;
+
+import lrs.*;
+
+public class LRSQueueFactory extends ALRSRACFactory {
+    /**
+     * Create a ``first-in, first-out'' (FIFO) container.
+     */
+    public IRAContainer makeRAC() {
+        return new LRSRAContainer(new IAlgo() {
+            public Object emptyCase(LRStruct host, Object... input) {
+                return host.insertFront(input[0]);
+            }
+
+            public Object nonEmptyCase(LRStruct host, Object... input) {
+                return host.getRest().execute(this, input);
+            }
+        });
+    }    
+}
+</code></section>
+      
+      
+      
+      <section id="element-305"><title>RandomRACFactory.java </title><code display="block" id="idm1916384">
+package rac;
+
+import lrs.*;
+
+/*
+ * Implements a factory for restricted access containers, including a
+ * container that returns a random item.
+ */
+public class RandomRACFactory extends ALRSRACFactory {
+    /**
+     * Create a container that returns a random item.
+     */
+    public IRAContainer makeRAC() {
+        return new LRSRAContainer(new IAlgo() {
+            public Object emptyCase(LRStruct host, Object... input) {
+                return host.insertFront(input[0]);
+            }
+
+            public Object nonEmptyCase(LRStruct host, Object input) {
+                /*
+                 * Math.Random returns a value between 0.0 and 1.0.
+                 */
+                if (0.5 &gt; Math.random())
+                    return host.insertFront(input[0]);
+                else
+                    return host.getRest().execute(this, input);
+            }
+        });
+    }
+}
+</code></section>
+      
+      <para id="id4929477">But can we push the abstraction further?   Is the difference between a stack and a queue really anything more than how the data is ordered? </para>
+      <para id="id4856789">Now, let's go on an look at the <link document="m17064">ordering object and priority queues... </link></para>
+    </section>
+  </content>
+</document>

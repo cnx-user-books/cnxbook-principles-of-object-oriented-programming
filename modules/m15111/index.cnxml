@@ -1,0 +1,142 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:md="http://cnx.rice.edu/mdml">
+  <title>List Structure and the Composite Design Pattern</title>
+  <metadata><md:content-id>undefined</md:content-id><md:title/><md:uuid>4b347af1-f028-4d25-a5c7-d128945d938a</md:uuid>
+</metadata>
+  <content>
+    <section id="id-170845158601">
+      <title>Going Shopping</title>
+      <para id="id16682838">Before I go to the groceries store, I make a list of what I want to buy.  Note how I build my shopping list: I start with a blank sheet of paper then I add one item at a time.</para>
+      <para id="id18345524">When I get to the store, I start buying things by going down my list.  For each item I buy, I mark it off the list.</para>
+      <para id="id14423454">After I am done shopping, I go to the cashier and check out my items.</para>
+      <para id="id16164515">The cashier scans my items one item at a time.  Each time, the cash register prints one line showing the item just scanned together with its price.  Again, note how the cash register builds the list: it start with a blank sheet of paper and then add one item at a time.  After all items have been scanned, the cashier press a key and "poof", the cash register prints a subtotal, then a tax amount for all the taxable items, then a total amount, and finally a total number of items bought.</para>
+      <para id="id18198677">At different store, the cash register not only prints out all of the above, but also a total amount of "savings" due to the fact that I have a "member-plus" card.  Some other stores don't care to print the total number of items bought at all.  Whatever the store, wherever I go, I see "lists" and "list processing" all over.</para>
+      <para id="id18198680">The check out cash register uses a program to enter the items and print the receipt.  At the heart of the program is a container structure to hold data (data structure) and a few algorithms to manipulate the structure and the data it holds.  The simplest way to organize data is to structure them in a linear fashion; that is, intuitively, if we can get hold of one data element, then there is exactly one way to get to the next element, if any.  We call this linear organization of data the list structure.  In order to write program to process lists, it is necessary to define what lists are and express their definitions in terms of code. </para>
+    </section>
+    <section id="id-17266725457">
+      <title>What is a list?</title>
+      <para id="id12028967">Analogous to the notion of a shape, a list is an abstract notion.  Recall how I built my list of groceries items?  I started with a blank list: an empty list!  The empty set!  </para>
+      <para id="id16270484">
+        <quote display="block" id="idp5427600">
+          <emphasis>An empty list is a list that has no element.</emphasis>
+        </quote>
+      </para>
+      <para id="id17485076">It is obvious that there are non-empty lists.  But what do we mean by a non-empty list?  How can we articulate such an obvious notion?  Consider for example the following list consisting of three elements.</para>
+      <list list-type="bulleted" id="id6218347">
+        <item>milk </item>
+        <item>bread </item>
+        <item>butter </item>
+      </list>
+      <para id="id16970805">In the above, we organize the items in a linear fashion with milk being the first element, bread being the next element following milk and butter being the next element following bread.  Is there any item that follows butter?</para>
+      <para id="id16970809">Is</para>
+      <list list-type="bulleted" id="id17074031">
+        <item>bread </item>
+        <item>butter </item>
+      </list>
+      <para id="id17137416">a list?</para>
+      <para id="id16579013">Is</para>
+      <list list-type="bulleted" id="id16579017">
+        <item>butter </item>
+      </list>
+      <para id="id16753382">a list?</para>
+      <para id="id14519058">Is there a list that follows butter in the above?</para>
+      <para id="id10600704">
+        <quote display="block" id="idm313920">
+          <emphasis>A non-empty list is a list that has an element called first and a list called rest.</emphasis>
+        </quote>
+      </para>
+      <para id="id12363522">
+        Note that in the above formulation, the rest of a list is itself a list!  The definition of a list is an example of what we call a <term>recursive</term> definition: the list contains a substructure that is <term>isomorphic</term> to itself.
+      </para>
+    </section>
+    <section id="id-0701430545559">
+      <title>List Design and the Composite Design Pattern</title>
+      <para id="id16320004">The UML diagram below captures the recursive data definition of the list data structure.</para>
+      <figure id="id15710190"><title>UML diagram of a list</title>
+	<media id="idm842752" alt=""><image src="../../media/graphics1-e76d.png" mime-type="image/png"/></media>
+<caption>A list can be represented using the composite design pattern</caption></figure>
+      <para id="id16073744">This definition translates into Java code as follows.</para>
+      <table id="id14569520" summary=""><tgroup cols="2" colsep="1">
+		<colspec colnum="1" colname="c1"/>
+		<colspec colnum="2" colname="c2"/>
+		<tbody>
+			<row>
+				<entry namest="c1" nameend="c2">
+					<code display="block" id="idm7530624">
+/**
+* Represents the abstract list structure.
+*/
+public interface IList {
+}
+                </code>
+				</entry>
+			</row>
+			<row>
+				<entry>
+					<code display="block" id="idm7238944">
+/**
+* Represents empty lists.
+*/
+public class MTList implements IList {
+}
+                </code>
+				</entry>
+				<entry>
+					<code display="block" id="idp470768">
+/**
+* Represents non-empty lists.
+*/
+public class NEList implements IList {
+    private Object _first;
+    private IList _rest;
+}
+                </code>
+				</entry>
+			</row>
+		</tbody>
+	</tgroup>
+</table>
+      <para id="id13936757">
+        The above is an example of what is called the <term>composite design pattern</term>.  The composite pattern is a <emphasis>structural</emphasis> pattern that prescribes how to build a container object that is composed of other objects whose structures are <term>isomorphic</term> to that of the container itself.  In this pattern, the container is called a composite. In the above, IList is called the abstract component, MTList is called the basic component and NEList is called the composite.  The composite design pattern embodies the concept of <term>recursion</term>, one of the most powerful thinking tool in computing.  (There is a subject in theoretical computer science and mathematics called "recursive function theory," which studies the meaning of what computing means and in effect defines in the most abstract form what a computer is and what it can and cannot do.)
+      </para>
+    </section>
+    <section id="id-903965977094">
+      <title>List Creation</title>
+      <para id="id17217097">
+        Now that we have defined what a list is, we ask ourselves how we can process it?  What can we do with a list?  The above code makes it clear that there is not a whole lot we can do with a list besides instantiating a bunch of MTList objects via the call new MTList() (why?).  Now that we are using the full Java language, we need to write a constructor for NEList in order to instantiate non-empty list objects with appropriate first and rest.  The Java code for NEList now looks as follows (note how the comments are written).
+      </para>
+      <code display="block" id="idp1133376">
+  /**
+  * Represents non-empty lists.
+  */
+  public class NEList implements IList {
+     private Object _first;
+     private IList _rest;
+
+     /**
+     * Initializes this NEList to a given first and a given rest.
+     * @param f the first element of this NEList.
+     * @param r the rest of this NEList.
+     */
+     public NEList(Object f, IList r) {
+        _first = f;
+        _rest = r;
+     }
+  }
+      </code>
+      <para id="id16841414">
+        The list structure as coded in the above is completely <term>encapsulated</term>, that is, all internal components (if any) of a list are private and cannot be accessed by any external code.  Using the appropriate constructors, we can make a bunch of lists to store data but we cannot retrieve data nor do anything with these lists.  In Object-Oriented Programming (OOP) parlance, the list is said to have no behavior at all.  As such they are of no use to us.
+      </para>
+    </section>
+    <section id="id-224064491897">
+      <title>List Processing</title>
+      <para id="id14983211">In order to perform any meaningful list processing at all, we need to program more "intelligence" into the list structure by adding appropriate methods to the list to provide the desired behaviors.  So instead of asking what we can do with a list, the right question to ask in OOP is "what can a list do for us?"  Let us start by presenting a few simple tasks that we want a list to perform and try to figure out how an "intelligent" list would carry out such tasks via some role acting.</para>
+      <section id="id-808479611647">
+        <title>In class role-acting exercises:</title>
+        <list list-type="bulleted" id="id3214613">
+          <item>Compute the length of a list. </item>
+          <item>Compute the sum of a list that holds integers. </item>
+        </list>
+      </section>
+    </section>
+  </content>
+</document>

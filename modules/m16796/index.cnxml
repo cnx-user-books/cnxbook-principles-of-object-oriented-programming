@@ -1,0 +1,481 @@
+<document xmlns="http://cnx.rice.edu/cnxml">
+  <title>Abstract Factory Design Pattern</title>
+  <metadata xmlns:md="http://cnx.rice.edu/mdml">
+  <md:content-id>m16796</md:content-id>
+  <md:title>Abstract Factory Design Pattern</md:title>
+  <md:abstract>We apply the Abstract Factory Design Pattern to abstract the manufacturing of the list structure and hide its implementation.  Such abstract construction together with the abstract specification of the intrinisc structural behavior of the list and the abstract specification of extrinsic operations on the list constitute a minimal and complete abstract specification of what is called a list software component.  It provides a framework for writing an open ended number of algorithms on list that are independent from any particular list implementation.</md:abstract>
+  <md:uuid>a90a3ed9-cd42-48d4-bd08-4199010d69e3</md:uuid>
+</metadata>
+
+<content>
+    <section id="id-59301656163">
+      <title>1. Information Hiding</title>
+      <para id="id6747445">Information hiding is a tried-and-true design principle that advocates hiding all implementation details of software components from the user in order to facilitate code maintenance.  It was first formulated by David L. Parnas (in 1971-1972) as follows.</para>
+      <list id="id6747458" list-type="bulleted">
+        <item>One must provide the intended user with all the information needed to use the module correctly <emphasis>and nothing more</emphasis>. <list id="id6747477" list-type="bulleted"><item>translation to OOP: the user should not know anything about how an interface or abstract class is implemented.  For example, the user need not and should not know how <code>IList</code> is implemented in order to use it.  The user should only program to the abstract specification.</item></list></item>
+        <item>One must provide the implementor with all the information needed to complete the module and nothing more. <list id="id6747518" list-type="bulleted"><item>translation to OOP: the implementor of a class or an interface should not know anything about how it will be used.  For example, the implementor need not and should not know how, when, or where <code>IList</code> will be used.  The implementor should write the implementation code based solely on the abstract specification.</item></list></item>
+      </list>
+      <para id="id6747544">By adhering to the above, code written by both users and implementors will have a high degree of flexibility, extensibility, interoperability and interchangeability.</para>
+      <para id="id6747551">The list framework that we have developed so far has failed to hide <code>MTList</code> and <code>NEList</code>, which are concrete implementations of <code>IList</code>, the abstract specification of the list structure.  In many of the list algorithms that we have developed so far, we need to call on <code>MTList.Singleton</code> or the constructor of <code>NEList</code> to instantiate concrete <code>IList</code> objects.  The following is another such examples.</para>
+      <table id="id6747594" summary="">
+        <tgroup cols="1">
+          <colspec colnum="1" colname="c1"/>
+          <tbody>
+            <row>
+              <entry>
+                <code>InsertInOrder.java</code>
+              </entry>
+            </row>
+            <row>
+              <entry>
+<code id="id1164841337583" display="block">
+import listFW.*;
+
+/**
+ * Inserts an Integer into an ordered host list, assuming the host list contains
+ * only Integer objects.
+ */
+public class InsertInOrder implements IListAlgo {
+
+    public static final InsertInOrder Singleton = new InsertInOrder();
+    private InsertInOrder() {
+    }
+
+    /**
+     * This is easy, don't you think?
+     * @param inp inp[0] is an Integer to be inserted in order into host.
+     */
+    public Object emptyCase(MTList host, Object... inp) {
+        return new NEList(inp[0], host);
+    }
+
+    /**
+     * Delegate (to recur)!
+     * @param inp inp[0] is an Integer to be inserted in order into host.
+     */
+    public Object nonEmptyCase(NEList host, Object... inp) {
+        int n = (Integer)inp[0];
+        int f = (Integer)host.getFirst();
+        return n &lt; f ?
+                new NEList(inp[0], host):
+                new NEList(host.getFirst(), (IList)host.getRest().execute(this, inp[0]));
+    }
+}
+</code>
+</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+      <para id="id6747630">The above algorithm to insert in order an integer into an ordered list of integers can only be used for a very specific implementation of <code>IList</code>, namely the one that has <code>MTList</code> and <code>NEList</code> as concrete subclasses.  How can we write list algorithms that can be used for ANY implementation of the abstract specification of the list structure represented by the abstract class <code>IList</code>?  </para>
+      <para id="id6747668">We can achieve our goal by</para>
+      <list id="id6747672" list-type="enumerated"><item>abstracting the behavior of <code>MTList</code> and <code>NEList</code> into interfaces with pure abstract structural behaviors.</item>
+        <item>applying the <link url="http://cnx.org/content/m17203/latest/">Abstract Factory Design Pattern</link> to hide the concrete implementation from the user.</item>
+      </list><para id="id6747714"/>
+    </section>
+    <section id="id-326907586541">
+      <title>2. Abstract List Behaviors</title>
+      <para id="id6747742">The concrete empty list and non-empty list implemented as <code>MTList</code> and <code>NEList</code> are now expressed as interfaces as follow. </para>
+      <table id="eip-544" summary="Top-level abstract list definition"><title>Top-level abstract list definition</title>
+<tgroup cols="1"><tbody>
+            <row>
+              <entry>
+<code id="id1164851464110" display="block">
+package listFW;
+
+/**
+ * Represents the abstract behavior of the immutable list structure.
+ * A list intrinsically "knows" how to execute an algorithm on itself.
+ */
+interface IList {
+    Object execute(IListAlgo algo, Object... inp);
+}
+</code>
+
+</entry>
+            </row>
+</tbody>
+</tgroup>
+</table><table id="id6747759" summary="Abstract empty and non-empty list definitions"><title>Abstract empty and non-empty list definitions</title>
+<tgroup cols="2"><colspec colnum="1" colname="c1"/>
+          <colspec colnum="2" colname="c2"/>
+          <tbody>
+
+            <row>
+              <entry>
+<code id="id1164862721394" display="block">
+package listFW;
+
+/**
+ * Represents the immutable empty list.
+ * The empty list has no well-defined 
+ * structural behavior: it has no first 
+ * and no rest.
+ */
+interface IMTList extends IList {
+}
+</code>
+</entry>
+<entry>
+<code id="id1164842394304" display="block">
+package listFW;
+
+/**
+ * Represents the immutable non-empty list.
+ * An immutable non-empty list has a data 
+ * object called first, and an isomorphic 
+ * subcomponent called rest.  Its structural 
+ * behavior provides access to its internal 
+ * data (first) and substructure (rest).
+ */
+interface INEList extends IList {
+    /**
+     * "Gettor" method for the list's first.
+     * @return this INElist's first element.
+     */
+    Object getFirst();
+
+    /**
+     * "Gettor" method for the list's rest.
+     * @return this INElist's rest.
+     */
+    IList getRest();
+}
+</code>
+
+</entry>
+            </row>
+          </tbody>
+        
+
+</tgroup>
+</table><para id="id6747807"/>
+    </section>
+    <section id="id-449464099467">
+      <title>3. Abstract List Factory</title>
+      <para id="id6747835">Before we describe in general what the <term>Abstract Factory Pattern</term> is, let's examine what we have to do in the case of <code>IList</code>.</para>
+      <list id="id6747851" list-type="bulleted">
+        <item>Define an abstract factory interface, <code>IListFactory</code>,  to manufacture empty and non-empty <code>IList</code> objects.  Put <code>IList</code>, <code>IMTList</code>, <code>INEList</code>,  <code>IListVistor</code>, and <code>IListFactory</code> in the same package.  <code>IListFactory</code> is specified as followed.  </item>
+      </list>
+      <table id="id6747915" summary="">
+        <tgroup cols="1">
+          <colspec colnum="1" colname="c1"/>
+          <tbody>
+            <row>
+              <entry>
+                <code>IListFactory.java</code>
+              </entry>
+            </row>
+            <row>
+<entry>
+<code id="id1164860755419" display="block">
+package listFW;
+
+/**
+ * Abstract factory to manufacture IMTList and INEList.
+ */
+interface IListFactory {
+    /**
+     * Creates an empty list.
+     * @return an IMTList object.
+     */
+    IMTList makeEmptyList();
+
+    /**
+     * Creates a non-empty list containing a given first and a given rest.
+     * @param first a data object.
+     * @param rest != null, the rest of the non-empty list to be manufactured.
+     * @return an INEList object containing first and rest
+     * @exception IllegalArgumentException if rest is null.
+     */
+    INEList makeNEList(Object first, IList rest);
+}
+</code>
+
+</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+      <para id="id6747950"><code>IList</code>, <code>IListAlgo</code>, and <code>IListFactory</code> prescribe a <emphasis>minimal</emphasis> and <emphasis>complete</emphasis> abstract specification of what we call a list <term>software component</term>.  We claim without proof that we can do everything we ever want to do with the list structure using this specification.</para>
+      <para id="id6747990"> </para>
+      <list id="id6747994" list-type="bulleted">
+        <item>All algorithms (i.e. visitors) that call for the creation of concrete <code>IList</code> objects will need to have an abstract factory as a parameter and use it to manufacture <code>IList</code> objects.  We usually pass the factory as an argument to the constructor of the visitor.  The visitor is thus not a singleton.</item>
+      </list>
+      <table id="id6748017" summary="">
+        <tgroup cols="1">
+          <colspec colnum="1" colname="c1"/>
+          <tbody>
+            <row>
+              <entry>
+                <code>InsertInOrderWithFactory.java</code>
+              </entry>
+            </row>
+            <row>
+<entry>
+<code id="id3203764" display="block">
+import listFW.*;
+
+/**
+ * Inserts an Integer into an ordered host list, assuming the host list contains
+ * only Integer objects.  Has no knowledge of how IList is implemented.  Must
+ * make use of a list factory (IListFactory) to create IList objects instead of
+ * calling the constructors of concrete subclasses directly.
+ */
+public class InsertInOrderWithFactory implements IListAlgo {
+
+    private IListFactory _listFact;
+
+    public InsertInOrderWithFactory(IListFactory lf) {
+        _listFact = lf;
+    }
+
+    /**
+     * Simply makes a new non-empty list with the given inp parameter as first.
+     * @param host an empty IList.
+     * @param inp inp[0] is an Integer to be inserted in order into host.
+     */
+    public Object emptyCase(IMTList host, Object... inp) {
+        return _listFact.makeNEList(inp[0], host);
+    }
+
+    /**
+     * Recur!
+     * @param host a non-empty IList.
+     * @param inp inp[0] is an Integer to be inserted in order into host.
+     */
+    public Object nonEmptyCase(INEList host, Object... inp) {
+        int n = (Integer)inp[0];
+        int f = (Integer)host.getFirst();
+        return n &lt; f ?
+                _listFact.makeNEList(inp[0], host):
+                _listFact.makeNEList(host.getFirst(),
+                                    (IList)host.getRest().execute(this, inp[0]));
+    }
+}
+</code>
+
+</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+      <para id="id6748053">The above algorithm only "talks" to the list structure it operates on at the highest level of abstraction specified by <code>IList</code> and <code>IListFactory</code>.  It does know and does not care how <code>IList</code> and <code>IListFactory</code> are implemented.  Yet it can be proved to be correct.  This algorithm can be plugged into any system that subscribes to the abstract specification prescribed by <code>IList</code>, <code>IListAlgo</code>, and <code>IListFactory</code>.</para>
+      <para id="id6748102"> </para>
+      <list id="id6748106" list-type="bulleted">
+        <item>Provide a concrete implementation of the abstract factory that contains all concrete subclasses of <code>IList</code> as <term>private static</term> classes and thus hide them from all external code.</item>
+      </list>
+      <table id="id6748125" summary="Concrete factory for instnatiating composite lists"><title>Concrete factory for instnatiating composite lists</title>
+<tgroup cols="1"><colspec colnum="1" colname="c1"/>
+          <tbody>
+            <row>
+              <entry>
+                <code>CompositeListFactory.java</code>
+              </entry>
+            </row>
+            <row>
+              <entry>
+<code id="id1164843876553" display="block">
+package listFW.factory;
+
+import listFW.*;
+
+/**
+ * Manufactures concrete IMTList and INEList objects.  Has only one
+ * instance referenced by CompositeListFactory.Singleton.
+ * MTList and NEList are static nested classes and hidden from all external
+ * client code.  The implementations for MTList and NEList are the same as
+ * before but completely invisible to the outside of this factory.
+ */
+public class CompositeListFactory implements IListFactory {
+
+    /**
+     * Note the use of private static.
+     */
+    private static class MTList implements IMTList {
+        public final static MTList Singleton = new MTList ();
+        private MTList() {
+        }
+
+        final public Object execute(IListAlgo algo, Object... inp) {
+            return algo.emptyCase(this, inp);
+        }
+
+        public String toString() {
+            return "()";
+        }
+    }
+</code></entry></row>
+<row><entry>
+<code id="eip-id1168674733908" display="block">
+    /**
+     * Note the use of private static.
+     */
+    private static class NEList implements INEList {
+        private Object _first;
+        private IList _rest;
+
+        public NEList(Object dat, IList rest) {
+            _first = dat;
+            _rest = rest;
+        }
+
+        final public Object getFirst() {
+            return _first;
+        }
+
+        final public IList getRest() {
+            return _rest;
+        }
+
+        final public Object execute(IListAlgo algo, Object... inp) {
+            return algo.nonEmptyCase(this, inp);
+        }
+
+
+        public String toString() {
+            return (String)ToStringAlgo.Singleton.nonEmptyCase(this);
+        }
+    }
+</code></entry></row>
+<row><entry>
+<code id="eip-id1168659336796" display="block">
+    /**
+     * Singleton Pattern
+     */
+    public static final CompositeListFactory Singleton = new CompositeListFactory();
+    private CompositeListFactory() {
+    }
+
+    /**
+     * Creates an empty list.
+     * @return an IMTList object.
+     */
+    public IMTList makeEmptyList() {
+        return MTList.Singleton;
+    }
+
+    /**
+     * Creates a non-empty list containing a given first and a given rest.
+     * @param first a data object.
+     * @param rest != null, the rest of the non-empty list to be manufactured.
+     * @return an INEList object containing first and rest
+     */
+    public INEList makeNEList(Object first, IList rest) {
+        return new NEList(first, rest);
+    }
+}
+</code>
+
+</entry>
+            </row>
+          </tbody>
+        
+</tgroup>
+</table><list id="id6748160" list-type="bulleted">
+        <item>Pass such a concrete factory to all client code that need to make use of the abstract factory to manufacture concrete <code>IList</code> instances. </item>
+      </list>
+      <para id="id6748173">Below is an example of a unit test for the <code>InsertInOrderWithFactory</code> algorithm. </para>
+      <table id="id6748182" summary="">
+        <tgroup cols="1">
+          <colspec colnum="1" colname="c1"/>
+          <tbody>
+            <row>
+              <entry>
+                <code>Test_InsertInOrderWithFactory.java</code>
+              </entry>
+            </row>
+            <row>
+              <entry>
+<code id="id1164861742241" display="block">
+package listFW.visitor.test;
+import listFW.*;
+import listFW.factory.*;
+import listFW.visitor.*;
+
+import junit.framework.TestCase;
+
+/**
+ * A JUnit test case class.
+ * Every method starting with the word "test" will be called when running
+ * the test with JUnit.
+ */
+public class Test_InsertInOrderWithFactory extends TestCase {
+  
+
+  public void test_ordered_insert() {
+    IListFactory fac = CompositeListFactory.Singleton;
+    IListAlgo algo = new InsertInOrderWithFactory(fac);
+    
+    IList list0 = fac.makeEmptyList();   
+    assertEquals("Empty list", "()", list0.toString());
+    
+    IList list1 = (IList) list0.execute(algo, 55);
+    assertEquals("55-&gt;()", "(55)", list1.toString());
+
+    IList list2 = (IList) list1.execute(algo, 30);
+    assertEquals("30-&gt;(55)", "(30, 55)", list2.toString());
+    
+    IList list3 = (IList) list2.execute(algo, 100);
+    assertEquals("100 -&gt; (30, 55)", "(30, 55, 100)", list3.toString());
+    
+    IList list4 = (IList) list3.execute(algo, 45);
+    assertEquals("45-&gt;(30, 55, 100)", "(30, 45, 55, 100)", list4.toString());
+    
+    IList list5 = (IList) list4.execute(algo, 60);
+    assertEquals("60 -&gt; (30, 45, 55, 100)", "(30, 45, 55, 60, 100)", list5.toString()); 
+  }  
+}
+</code>
+
+</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+      <para id="id6748218"/>
+      <para id="id6782610">The above design process is an example of what is called the <term>Abstract Factory Design Pattern</term>.  The intent of this pattern is to provide an abstract specification for manufacturing a family of related objects (for examples, the empty and non-empty <code>IList</code>) without specifying their actual concrete classes thus hiding all details of implementation from the user. </para>
+      <para id="id6782633">Our example of the list structure framework successfully delineates specification from implementation and faithfully adheres to the principle of information hiding. </para>
+      <list id="id6782643" list-type="bulleted"><item><code>IList</code>, <code>IMTList</code>, <code>INEList</code>, <code>IListAlgo</code>, and <code>IListFactory</code> provide a minimal and complete abstract specification.</item>
+	<item><code>InsertInOrderWithFactory</code> is a concrete implementation of <code>IListAlgo</code> that performs a concrete operation on the host list.  Yet this algorithm need only communicate with the list structure and the list factory via their public interface.  It will work with any implementation of <code>IList</code> and <code>IListFactory</code>.</item>
+	<item><code>CompositeListFactory</code> is a concrete implementation of <code>IListFactory</code>.  It uses the composite pattern and the visitor pattern to implement <code>IList</code>.  It only communicates with <code>IListAlgo</code> at and knows nothing about any of its concrete implementation.  The <term>private</term> <term>static</term> attributes provide the proper mechanism to hide all implementation details from all code external to the class.</item>
+</list>
+      <para id="id6782760"> </para>
+      <para id="id6782764">Click here to access <link url="http://www.clear.rice.edu/comp201/08-spring/lectures/visitor/listFW/doc/">the complete javadoc documentation and UML class diagram of the list component</link> described in the above.</para><para id="id6782787">Click here to download <link url="http://www.clear.rice.edu/comp201/08-spring/lectures/lec17/listFW.zip">the complete source code and documentation of the list component</link> described in the above.</para><para id="id6782805"/>
+    </section>
+    <section id="id-560715279907">
+      <title>4. Frameworks</title>
+      <para id="id6782834">The following is a direct quote from the <emphasis>Design Patterns</emphasis> book by Gamma, Helm, Johnson, and Vlissides (the Gang of Four - GoF).</para>
+      <para id="id6782846">"<cite><cite-title>Frameworks thus emphasizes design reuse over code resuse...Reuse on this level leads to an inversion of control between the application and the software on which it's based. When you use a toolkit (or a conventional subroutine library software for that matter), you write the main body of the application and call the code you want to reuse. When you use a framework, you reuse the main body and write the code it calls....</cite-title></cite>"</para>
+      <para id="id6782863">The linear recursive structure (<code>IList</code>) coupled with the visitors as shown in the above is one of the simplest, non-trivial, and practical examples of frameworks.  It has the characteristic of "inversion of control" described in the quote. It illustrates the so-called Hollywood Programming Principle: Don't call me, I will call you. Imagine the <code>IList</code> union sitting in a library. </para>
+      <para id="id6782894">The above list framework dictates the design of all algorithms operating on the list structure:</para>
+      <list id="id6782899" list-type="bulleted">
+        <item>All algorithms must be some concrete implementation of <code>IListAlgo</code>. <list id="id6782914" list-type="bulleted"><item>Algorithms that require the construction of empty and/or non-empty lists, must do so via some abstract list factory, <code>IListFactory</code>. </item></list></item>
+        <item>In order to apply an algorithm to a list, one must ask a list to "execute" that algorithm, giving it the required input parameter. </item>
+      </list>
+      <para id="id6782935">When we write an algorithm on an <code>IList</code> in conformance with its visitor interface, we are writing code for the <code>IList</code> to call and not the other way around. By adhering to the <code>IList</code> framework's protocol, all algorithms on the <code>IList</code> can be developed much more quickly. And because they all have similar structures, they are much easier to "maintain". The <code>IList</code> framework puts polymorphism to use in a very effective (and elegant!) way to reduce flow control and code complexity.</para>
+      <para id="id6782973">We do not know anything about how the above list framework is implemented, yet we have been able to write quite a few algorithms and test them for correctness.   In order to obtain concrete lists and test an algorithm, we call on a concrete <code>IListFactory</code>, called <code>CompositeListFactory</code>, to manufacture empty and non-empty lists.  We do not know how this factory creates those list objects, but we trust that it does the right thing and produces the appropriate list objects for us to use.  And so far, it seems like it's doing its job, giving us all the lists we need.  </para>
+      <para id="id6783006"> </para>
+    </section>
+    <section id="id-403539011173">
+      <title>5. Bootstrapping Along</title>
+      <para id="id6783018">Let's take a look back at what we've done with a list so far:</para>
+      <list id="id6783023" list-type="enumerated">
+        <item>Created an invariant list interface with two variant concrete subclasses (Composite pattern) where any algorithms on the list where implemented as methods of the interface and subclasses (Interpreter pattern) </item>
+        <item>Extracted the variant algorithms as visitors leaving behind an invariant "execute" method. Accessor methods for first and rest installed. The entire list structure now becomes invariant.</item>
+        <item>Abstracted the creation of a list into an invariant factory interface with variant concrete subclass factories.</item>
+        <item>Separated the list framework into an invariant hierarchy of interfaces and a variant implementation which was hidden inside of a variant factory class. </item>
+      </list>
+      <para id="id6783059">Is there something systematic going on here?</para>
+      <para id="id6783064">Notice that at every stage in our development of our current list framework, we have applied the <emphasis>same</emphasis> abstraction principles to the then current system to advance it to the next stage. Specifically, we have identified and separated the variant and invariant pieces of the system and defined abstract representations whenever needed.</para>
+      <para id="id6783079">This really tells us about some general characteristics of software development:</para>
+      <list id="id6783085" list-type="bulleted">
+        <item>Software development is an iterative process. You never get the right answer the first time and you have to slowly "evolve" your code closer and closer to what you want.</item>
+        <item>Every time you change your code you learn something more and/or new about your system and/or problem. This is because every new formulation of your solution represents a new way, a new view as it were, on the problem and this new view highlights aspects you hadn't considered before. </item>
+        <item>The revision process is driven along by a repetitive application of the abstract decomposition techniques such as separating the variant and invariant.</item>
+      </list>
+      <para id="id6783114">Are we done with our list refinements? Will we ever be "done"? What do the above characteristics say about the way we should approach software development?</para>
+      <para id="id6783121">Also, now that we have managed to abstract structure, behavior and construction, is there anything left to abstract? Or is there one more piece to our abstraction puzzle (at least)?</para>
+    </section>
+  </content>
+</document>

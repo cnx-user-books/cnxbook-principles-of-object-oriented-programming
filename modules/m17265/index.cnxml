@@ -1,0 +1,219 @@
+<document xmlns="http://cnx.rice.edu/cnxml">
+  <title>Mutable Linear Recursive Structure</title>
+  <metadata xmlns:md="http://cnx.rice.edu/mdml">
+  <md:content-id>m17265</md:content-id>
+  <md:title>Mutable Linear Recursive Structure</md:title>
+  <md:abstract>Immutable lists are certainly very useful, but sometimes we naturally think of things as changing state.   For instance, when we add an item to a list in real life, we don't throw away the old list; we mutate it to hold the new item.  In this section we define the structure and behavior of a mutable list using a combination of the state dsign pattern and the visitor design pattern.</md:abstract>
+  <md:uuid>493292a5-0da8-4c76-a7b9-f650fe1f8e04</md:uuid>
+</metadata>
+  <content>
+    <section id="id-727855078941">
+      <title>1. State Pattern and Dynamic Reclassification</title>
+      <para id="id11286228">In programming, it is often necessary to have objects with which one can store data, retrieve data when needed, and remove data when no longer needed. Such objects are instances of what we call container structures.</para>
+      <para id="id11956595">A mutable container structure is a system that may change its state from empty to non-empty, and vice-versa. For example, an empty container changes its state to non-empty after insertion of an object; and when the last element of a container is removed, its changes its state to empty. Figure 1 below diagrams the state transition of a container structure.</para>
+      <para id="id11562736">  <figure id="id10430852"><media id="id1164821717634" alt=""><image src="../../media/graphics1-035c.png" mime-type="image/png" height="291" width="349"/></media><caption>State transition diagram for container structures</caption></figure></para>
+      <para id="id11181202">For each distinct state, the algorithms to implement the methods differ. For example, the algorithm for the retrieve method is trivial in the empty state -it simply returns null- while it is more complicated in the non-empty state. The system thus behaves as if it changes classes dynamically. This phenomenon is called “dynamic reclassification.” The state pattern is a design solution for languages that do not directly support dynamic reclassification. This pattern can be summarized as follow.</para>
+      <list id="element-81" list-type="bulleted">
+<item>Define an abstract class for the states of the system. This abstract state class should provide all the abstract methods for all the concrete subclasses.</item>
+<item>Define a concrete subclass of the above abstract class for each state of the system. Each concrete state must implement its own concrete methods.</item>
+<item>Represent the system by a class, called the context, containing an instance of a concrete state. This instance represents the current state of the system.</item>
+<item> Define methods for the system to return the current state and to change state.</item>
+<item> Delegate all requests made to the system to the current state instance. Since this instance can change dynamically, the system will behave as if it can change its class dynamically.</item>
+</list>
+
+      <para id="id11819297">Below is the UML class diagram for the <link document="m17047">state design pattern</link>. </para>
+      <figure id="id9616700"><media id="id1164831661219" alt=""><image src="../../media/graphics2-ab13.png" mime-type="image/png" height="528" width="994"/></media><caption>UML class diagram for the state design pattern</caption></figure>
+      
+    </section>
+    <section id="id-0557439127436">
+      <title>2. Mutable Linear Recursive Structure Framework</title>
+      <para id="id11868737">A mutable linear recursive structure (<code>LRStruct</code>) can be in the empty state or in a non-empty state. If it is empty, it contains no object. Otherwise, it contains an object called <emphasis>first</emphasis>, and a <code>LRStruct</code> object called <emphasis>rest</emphasis>. When we insert a data object into an empty <code>LRStruct</code>, it changes it state to non-empty.   When we remove the last element from an non-empty <code>LRStruct</code>, it changes its state to empty.  We model a <code>LRStruct</code> using the state pattern, and as in the case of the <link document="m16707">immutable list,</link> we also apply the visitor pattern to obtain a <term>framework</term>.  Below is the UML class diagram of the <code>LRStruct</code> framework.  Because of the current limitation of our diagramming tool, we are using the <code>Object[] input</code> notation to represent the variable argument list <code>Object... input</code>.  <link resource="lrs.zip">Click here to download the code</link>.  <link resource="lrsdocs.zip">Click here to download the javadoc documentation.</link>.  We will study the implementation code in the next lecture.</para>
+      <para id="id11805394">
+        <figure id="id9923956"><media id="id1164820837319" alt=""><image src="../../media/graphics3-adb0.png" mime-type="image/png" height="743" width="929"/></media><caption>State and Visitor Patterns for Mutable Linear Recursive Structure</caption></figure>
+      </para>
+      
+      <para id="id9593828">The public constructor: </para>
+      <list id="id11181864" list-type="bulleted">
+        <item>
+          <code>LRStruct() </code>
+        </item>
+      </list>
+      <para id="id6225210">and the methods: </para>
+      <list id="id11864278" list-type="bulleted"><item>
+		<code>insertFront(...) </code>
+	</item>
+	<item>
+		<code>removeFront(...) </code>
+	</item>
+	<item>
+		<code>getFirst() </code>
+	</item>
+	<item>
+		<code>setFirst(...) </code>
+	</item>
+	<item>
+		<code>getRest() </code>
+	</item>
+	<item><code>setRest(...)</code> </item>
+</list>
+      <para id="id10582996">of <code>LRStruct</code> expose the structure of an <code>LRStruct</code> to the client and constitute the <emphasis>intrinsic</emphasis> structural behavior of an <code>LRStruct</code>. They form a <emphasis>minimal and complete</emphasis> set of methods for manipulating an <code>LRStruct</code>. Using them, a client can create an empty <code>LRStruct</code>, store data in it, and remove/retrieve data from it at will.</para>
+      
+      <para id="id11598678">The method,  </para>
+      <list id="id12158299" list-type="bulleted"><item><code>Object execute(IAlgo algo, Object inp)</code>  </item>
+</list>
+      <para id="id11540349">is called the extensibility "<term>hook</term>".  It allows the client to add an open-ended number of new application-dependent behaviors to the data structure <code>LRStruct</code>, such as computing its length or merging one <code>LRStruct</code> with another, without modifying any of the existing code.  The application-dependent behaviors of <code>LRStruct</code> are <emphasis>extrinsic</emphasis> behaviors and are encapsulated in a union represented by a visitor interface called <code>IAlgo</code>.</para>
+      <para id="element-19">When a client programs with <code>LRStruct</code>, he/she only sees the public methods of  <code>LRStruct</code> and <code>IAlgo</code> .  To add a new operation on an <code>LRStruct</code>, the client writes appropriate concrete classes that implements  <code>IAlgo</code>. The framework dictates the overall design of an algorithm on <code>LRStruct</code>: since an algorithm on <code>LRStruct</code> must implement <code>IAlgo</code> , there must be some concrete code for <code>emptyCase(...)</code> and some concrete code for <code>nonEmptyCase(...)</code>.  For example, </para>
+      <para id="id10484307"><code id="id1164836036000" display="block">
+public class DoSomethingWithLRS implements IAlgo {
+   // fields and constructor code...
+   public Object emptyCase(LRStruct host, Object... inp) {
+       // some concrete code here...
+       return some Object; // may be null.
+   }
+
+   public Object nonEmptyCase(LRStruct host, Object... inp) {
+       // some concrete code here...
+       return some Object; // may be null.
+   }
+}  
+</code>
+</para>
+      
+      
+      <para id="id11808029">As illustrated in the above, an algorithm on <code>LRStruct</code> is "<emphasis>declarative</emphasis>" in nature.  It does not involve any conditional to find out what state the <code>LRStruct</code> is in in order to perform the appropriate task.  It simply "declares" what needs to be done for each state of the host <code>LRStruct</code>, and leaves it to the polymorphism machinery to make the correct call.  Polymorphism is exploited to minimize flow control and  reduce code complexity.</para>
+      <para id="element-866">To perform an algorithm on an <code>LRStruct</code>, the client must "ask" the <code>LRStruct</code> to "execute" the algorithm and passes to it all the inputs required by the algorithm.</para>
+      <para id="id11286038"><code id="id1164825387174" display="block">
+LRStruct myList = new LRStruct();  // an empty list
+// code to call on the structural methods of myList, e.g. myList.insertFront(/*whatever*/)
+// Now call on myList to perform DoSomethingWithLRS:
+Object result = myList.execute(
+    new DoSomethingWithLRS(/* constructor argument list */), -2.75, "abc"); 
+
+</code>
+</para><para id="id10431885"> Without knowing how LRStruct is implemented, let us look an example of an algorithm on an LRStruct .</para>
+    </section>
+    <section id="id-493293359134">
+      <title>3. Example</title>
+      <para id="id11507251">Consider the problem of inserting an Integer object <emphasis>in order</emphasis> into a <emphasis>sorted</emphasis> list of Integers.  Let us contrast the insert in order algorithms between <code>IList</code>, the immutable list, and <code>LRStruct</code>, the mutable list.</para>
+      <table id="id11804494" summary=""><tgroup cols="2">
+          <colspec colnum="1" colname="c1"/>
+          <colspec colnum="2" colname="c2"/>
+<tbody>
+               <row>
+                     <entry>
+                           <emphasis>Insert in order using factory</emphasis>
+                    </entry>
+                    <entry>
+                          <emphasis>Insert in order using mutation</emphasis>
+                                              </entry>
+</row>
+<row>
+                   <entry>
+                     <code id="id1164821693944" display="block">
+import listFW.*;
+
+public class InsertInOrder 
+  implements IListAlgo {
+
+  private IListFactory _fact;
+
+  public InsertInOrder(IListFactory lf) {
+    _fact = lf;
+  }
+
+  /**
+  * Simply makes a new non-empty list with 
+  * the given parameter n as first.
+  * @param host an empty IList.
+  * @param n n[0] is an Integer to be 
+  *   inserted in order into host.
+  * @return INEList.
+  */
+  public Object emptyCase(
+    IEmptyList host, Object... n) {
+
+    return _fact.makeNEList(n[0], host);
+  }
+
+  /**
+  * Based on the comparison between first 
+  * and n, creates a new list or recur!
+  * @param host a non-empty IList.
+  * @param n an Integer to be inserted in 
+  *   order into host.
+  * @return INEList
+  */
+  public Object nonEmptyCase(
+    INEList host, Object... n) {
+    
+    return (Integer)n[0] &lt; 
+      (Integer)host.getFirst() ?
+        _fact.makeNEList(n[0], host):
+        _fact.makeNEList(host.getFirst(),
+          (IList)host.getRest().execute(
+            this, n[0]));
+  }
+}
+</code>
+       
+</entry>
+<entry>
+                            <code id="id1164823590186" display="block">
+import lrs.*;
+
+public class InsertInOrderLRS 
+  implements IAlgo {
+
+  public static final InsertInOrderLRS 
+    Singleton = new InsertInOrderLRS();
+
+  private InsertInOrderLRS() {}
+
+  /**
+  * Simply inserts the given parameter n at 
+  * the front.
+  * @param host an empty LRStruct.
+  * @param n n[0] isan Integer to be 
+  *  inserted in order into host.
+  * @return LRStruct
+  */
+  public Object emptyCase(
+    LRStruct host, Object... n) {
+
+    return host.insertFront(n[0]);
+  }
+
+  /**
+  * Based on the comparison between first 
+  * and n, inserts at the front or recurs!
+  * @param host a non-empty LRStruct.
+  * @param n n[0] is  an Integer to be 
+  *   inserted in order into host.
+  * @return LRStruct
+  */
+  public Object nonEmptyCase(
+    LRStruct host, Object... n) {
+    
+    if ((Integer)n[0] &lt; (
+      Integer)host.getFirst()) {
+      
+      return host.insertFront(n[0]);
+    }
+    else {
+      return host.getRest().execute(
+        this, n[0]);
+    }
+  }
+}</code>
+                   </entry>
+              </row>
+              <row>
+                     <entry namest="c1" nameend="c2"> 
+                             <emphasis>Note</emphasis> that the insert in order algorithm for <code>LRStruct</code> need not create any new list and thus needs no factory.Download the above code: <link resource="lrs.zip">lrs.zip</link></entry>
+              </row>
+        </tbody>        
+</tgroup>
+      </table><para id="id11284068"> </para>
+    </section>
+  </content>
+</document>

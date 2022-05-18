@@ -1,0 +1,66 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:md="http://cnx.rice.edu/mdml">
+  <title>State Design Pattern</title>
+  <metadata>
+  <md:content-id>m17225</md:content-id><md:title>State Design Pattern</md:title>
+  <md:abstract>Many real-life systems change the way they behave as they change states.  It is desirable for object models of such systems to be able to change their behaviors as if they are changing types dynamically.  The state design pattern is a design solution for this problem of dynamic reclassification.  The key element is to abstract the state dependent behavior of the system in question as an abstract class and encapsulate each concrete variant behavior as a concrete subclass.</md:abstract>
+  <md:uuid>b7d7a210-8b00-4233-8809-43ca27a710a1</md:uuid>
+</metadata>
+
+<content>
+    <para id="id11649711">When modeling real-life systems, we often find that certain objects in our system seem to change "state" during the course of a computation. </para>
+    <para id="id7752032">Examples of changing state:</para>
+    <list id="id11757368" list-type="enumerated">
+      <item>A kitten grows up into a cat</item>
+      <item>A car runs into a telephone pole and becomes a wreck.</item>
+      <item>A friend is sad one day, happy another, and grumpy on yet another day.</item>
+      <item>A list changes from empty to non-empty when an element is added.</item>
+      <item>A fractal becomes more complex when it grows</item>
+      <item>etc. etc.</item>
+    </list>
+    <para id="id9351414">The cat and the kitten are the same animal, but they don't act identically. A car can be driven but a wreck cannot--yet they are the same entity fundamentally. Your friend is the same human being, no matter what their mood. Why shouldn't a list be the same list and a fractal be the same fractal?</para>
+    <para id="id11024345"><emphasis>When something changes state, it is the same object, but yet it behaves differently</emphasis>. This phenomenon of having an objects change its behavior as if it were suddenly belonging to a whole different class of objects is called "<emphasis>dynamic reclassification</emphasis>".</para>
+    <para id="id10726689">So far we've been using immutable data, and to create a non-empty list from an empty one, required that we make a whole brand-new list. With our use <emphasis>assignment</emphasis> ("=") previously, we've changed the <emphasis>value</emphasis> of a variable, but never the <emphasis>behavior</emphasis> the object it references.</para>
+    <para id="id9050939">Consider this notion: We want to change the type of the object but we want to <emphasis>encapsulate that change</emphasis> so that the outside world does <emphasis>not</emphasis> see the type change, only the behavior change.</para>
+    <para id="id11272962">Let's work with an example:</para>
+    <para id="id9179305">Remember the old arcade game, "Frogger"? That's the one where a traffic-challenged amphibian attempts to hop across multiple lanes of speeding cars and trucks, hopefully without being converted into the road-kill-du-jour. </para>
+    <para id="id9163191">(Here's an on-line version: <link url="http://www.gamesgnome.com/arcade/frogger/">http://www.gamesgnome.com/arcade/frogger/</link>)</para>
+    <para id="id9721934">Well, let's look at what a frog is here:</para>
+    <para id="id9721938">A live frog</para>
+    <list id="id10803089" list-type="bulleted">
+      <item>Has a well-defined position</item>
+      <item>Has a green color</item>
+      <item>Can move from place to place</item>
+      <item>Dies when hit by a vehicle.</item>
+    </list>
+    <para id="id10854396">On the other hand, a dead frog</para>
+    <list id="id8849061" list-type="bulleted">
+      <item>Has a well-defined position</item>
+      <item>Has a decided red color.</item>
+      <item>Cannot move from place to place</item>
+      <item>Doesn't die when hit by a vehicle because it is already dead.</item>
+    </list>
+    <para id="id9631276">Using our trusty separation of variant and invariant, we can see that the position of a frog is an invariant but all the other behaviors are variants. Thus we want to separate out these variants into their own subclasses of an invariant abstract class. We then use composition to model the frog having an abstract state, which could be either alive or dead:</para>
+    <para id="id10594370"><link resource="frog.zip">Download the code here.</link><figure id="id7751721"><media id="id1167294268313" alt=""><image src="../../media/graphics1-96f9.png" mime-type="image/png"/></media></figure>
+	<link resource="frogDocs.zip">Click here to download the full javadoc documentation of the above code.</link></para>
+    <para id="id11643302">The variant behaviors are represented by the abstract <code>AFrogState</code>, with the <code>DeadState</code> and <code>LiveState</code> implementing its abstract behaviors.</para>
+    <para id="id10589830">(Note: The <code>IFrog</code> interface is there simply to allow different formulations of the frog to exist. See the <link target-id="Question">Question</link> below.)</para>
+    <para id="id9950134">For those variant behaviors, all the main <code>Frog</code> does is to <emphasis>delegate</emphasis> (pass the call on to and return the result of) to the <code>_state</code> that it has. If the <code>_state</code> is a <code>LiveState</code>, then the <code>Frog</code> will act as if were alive because the <code>LiveState</code> only contains live-like behaviors. On the other hand, if the state is a <code>DeadState</code>, then the delegation to the <code>_state</code> will produce dead-like behavior. The <code>LiveState</code>'s <code>getHit</code> behavior will cause the <code>Frog</code>'s <code>_state</code> to change from referencing a <code>LiveState</code> instance to referencing a <code>DeadState</code> instance.</para>
+    <para id="eip-144"><title>No conditionals are needed!!</title><emphasis>The Frog behaves the way it does because of what it is at that moment, not because of what it can figure out about itself then. </emphasis></para>
+    <para id="eip-387">This is an example of the State Design Pattern. <link document="m17047"> Click here for more information on the State design pattern.</link></para><para id="eip-29">From the outside, nothing about the internal implementation of <code>Frog</code> can be seen. All one can see is its public behavior. The implementations of the state design pattern are completely encapsulated (within the frog package, in this formulation).. For instance, if one is moving a live <code>Frog</code>, it will dutifully move as directed, but if in the middle somewhere, the <code>Frog</code> is hit, then it will immediately stop moving, no matter how much it is asked to do so. If one is checking its color, the live <code>Frog</code> is a healthy green but right after its accident, it will report that it is deathly red. </para><para id="eip-349">Notice how the Frog changes its behavior and always behaves correctly for its situation, <emphasis>with no conditional statements whatsoever</emphasis>.</para>
+    <section id="Question">
+      <title>Question:</title>
+      <para id="id9743234">A very nice technique, when it is possible, is to implement the State pattern using anonymous inner classes. Can you write an <code>IFrog</code> implementation that encapsulates the states using nested class(es)and anonymous inner class(es)?</para>
+      <list id="id11552285" list-type="bulleted">
+        <item>It can be done using only one publicly visible class and no package visible classes at all.</item>
+        <item>The only methods needed are those specified by <code>IFrog</code>.</item>
+        <item>How does using anonymous inner class(es) reduce the number of parameters passed to the state?</item>
+        <item>How does using the anonymous inner class(es) reduce the number of non-public methods?</item>
+      </list>
+    </section>
+    <section id="id-984872827641">
+      <title>Onward!</title>
+      <para id="id7624444">Looking way back to the beginning of the semester, we now have to ask, "Can we use this technology to create a <emphasis>mutable</emphasis> list? How will this affect the visitors and their execute function?" Hmmmm.....</para>
+      
+    </section>
+  </content>
+</document>
