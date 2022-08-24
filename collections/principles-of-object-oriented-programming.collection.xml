@@ -1,12 +1,13 @@
-<col:collection xmlns="http://cnx.rice.edu/collxml" xmlns:md="http://cnx.rice.edu/mdml" xmlns:col="http://cnx.rice.edu/collxml" xml:lang="en">
+<?xml version="1.0"?>
+<col:collection xmlns="http://cnx.rice.edu/collxml" xmlns:md="http://cnx.rice.edu/mdml" xmlns:col="http://cnx.rice.edu/collxml" xml:lang="en" authors="Stephen Wong ,Dung Nguyen">
   <metadata xmlns:md="http://cnx.rice.edu/mdml" mdml-version="0.5">
     <md:content-id>col10213</md:content-id>
     <md:title>Principles of Object-Oriented Programming</md:title>
     <md:language>en</md:language>
     <md:license url="http://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution License</md:license>
     <md:uuid>402b20ad-c01f-45f1-9743-05eadb1f710e</md:uuid>
-<md:slug>principles-of-object-oriented-programming</md:slug>
-</metadata>
+    <md:slug>principles-of-object-oriented-programming</md:slug>
+  </metadata>
   <col:content>
     <col:subcollection>
       <md:title>Introduction</md:title>
